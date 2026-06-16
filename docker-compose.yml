@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mavuti-postgres
+    environment:
+      POSTGRES_DB: mavutidb
+      POSTGRES_USER: mavuti
+      POSTGRES_PASSWORD: mavuti_dev_pw
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mavuti -d mavutidb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: mavuti-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/mavutidb
+      SPRING_DATASOURCE_USERNAME: mavuti
+      SPRING_DATASOURCE_PASSWORD: mavuti_dev_pw
+      JWT_SECRET: local-dev-secret-key-must-be-at-least-32bytes!
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+    # Comment out or remove this section
+    # health check:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 90s
+
+  frontend:
+    image: node:22-alpine
+    container_name: mavuti-frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend  # Remove the condition, just depend on backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api/v1
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:

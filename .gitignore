@@ -1,0 +1,40 @@
+# ── Java / Maven ─────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# ── Node / React ─────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ── Environment / Secrets ────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ── IDE ──────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# ── OS ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docker ───────────────────────────────────
+# Keep Dockerfiles — ignore local overrides
+docker-compose.override.yml
+
+# ── Logs ─────────────────────────────────────
+*.log
+logs/

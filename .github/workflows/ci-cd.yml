@@ -1,0 +1,230 @@
+name: Mavuti Health Platform CI/CD
+
+# Trigger on push to main (deploy) and any PR (test only)
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE:  ${{ github.repository }}/mavuti-backend
+  FRONTEND_IMAGE: ${{ github.repository }}/mavuti-frontend
+
+# ─────────────────────────────────────────────────────────────
+# JOB 1: Backend Tests
+# ─────────────────────────────────────────────────────────────
+jobs:
+  backend-test:
+    name: Backend — Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      # Spin up a real PostgreSQL for integration tests
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mavuti_test
+          POSTGRES_USER: mavuti
+          POSTGRES_PASSWORD: mavuti_test_pw
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Maven tests
+        working-directory: backend
+        run: mvn -B verify -P ci
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          DATABASE_URL: jdbc:postgresql://localhost:5432/mavuti_test
+          SPRING_DATASOURCE_USERNAME: mavuti
+          SPRING_DATASOURCE_PASSWORD: mavuti_test_pw
+          JWT_SECRET: ci-test-secret-that-is-long-enough-32bytes!
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-surefire-report
+          path: backend/target/surefire-reports/
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 2: Frontend lint + build
+  # ─────────────────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://mavuti-api.onrender.com/api/v1
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 3: Build & Push Docker images  (main branch only)
+  # ─────────────────────────────────────────────────────────────
+  docker-publish:
+    name: Docker — Build & Push
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata (backend)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            latest
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata (frontend)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            latest
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            VITE_API_BASE_URL=https://mavuti-api.onrender.com/api/v1
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 4: Deploy to Render  (main branch only)
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: [docker-publish]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: https://mavuti-health.onrender.com
+
+    steps:
+      - name: Trigger Render backend deploy
+        run: |
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_BACKEND_SERVICE_ID }}/deploys" \
+            -d '{}' | jq .
+
+      - name: Trigger Render frontend deploy
+        run: |
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_FRONTEND_SERVICE_ID }}/deploys" \
+            -d '{}' | jq .
+
+      - name: Wait for backend health
+        run: |
+          echo "Waiting for backend to become healthy..."
+          for i in $(seq 1 20); do
+            status=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://mavuti-api.onrender.com/actuator/health || echo "000")
+            echo "Attempt $i — HTTP $status"
+            if [ "$status" = "200" ]; then
+              echo "✅ Backend is healthy!"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "❌ Backend health check timed out"
+          exit 1
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | https://mavuti-health.onrender.com |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend API | https://mavuti-api.onrender.com |" >> $GITHUB_STEP_SUMMARY
+          echo "| Swagger UI | https://mavuti-api.onrender.com/swagger-ui/index.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Check | https://mavuti-api.onrender.com/actuator/health |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
