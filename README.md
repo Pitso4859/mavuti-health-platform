@@ -1,4 +1,4 @@
-# Mavuti Health Platform v2
+# Mavuti Health Platform 
 
 > **VUT Health Clinic · Full-Stack · Spring Boot + React + Gemini AI**
 
@@ -6,9 +6,9 @@
 
 ---
 
-## What's New in v2
+## What's New in 
 
-| Feature | v1 | v2 |
+| Feature |  |  |
 |---|---|---|
 | **AI Health Assistant** | ✗ | ✅ Google Gemini 1.5 Flash |
 | **Icons** | FontAwesome (font-based) | ✅ Inline SVG (zero runtime) |
