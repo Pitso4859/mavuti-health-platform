@@ -1370,3 +1370,41 @@ button { cursor: pointer; font-family: inherit; }
   .admin-nav-item.active { border-bottom-color: var(--vut-gold); border-left-color: transparent; }
   .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Hero two-column layout ───────────────────────────────── */
+.hero-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s12);
+  align-items: center;
+  min-height: 520px;
+}
+
+.hero-image-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Pulsing dot animation for "Open now" badge */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* Vertical divider responsive hide */
+@media (max-width: 768px) {
+  .divider-v { display: none; }
+}
+
+@media (max-width: 900px) {
+  .hero-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .hero-image-wrap {
+    order: -1; /* show image above text on mobile */
+  }
+}
