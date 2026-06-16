@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
+import { VUTLogo,
   IconAlertCircle,
   IconGraduationCap,
   IconBriefcase,
@@ -278,17 +278,7 @@ export default function LoginPage() {
             justifyContent: 'center',
             gap: 24,
           }}>
-            <img
-                src="/images/vut_logo.png"
-                alt=""
-                aria-hidden="true"
-                style={{
-                  width: 160,
-                  opacity: 0.92,
-                  filter: 'brightness(0) invert(1)',
-                  userSelect: 'none',
-                }}
-            />
+            <VUTLogo size={100} />
             <div style={{ textAlign: 'center', color: '#fff' }}>
               <p style={{
                 fontFamily: 'var(--font-display)',
@@ -322,17 +312,7 @@ export default function LoginPage() {
 
           {/* Logo */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <img
-                src="/images/vut_logo.png"
-                alt="Vaal University of Technology"
-                style={{
-                  height: 72,
-                  width: 'auto',
-                  objectFit: 'contain',
-                  /* render the white-on-dark PNG in navy on the white panel */
-                  filter: 'brightness(0) saturate(100%) invert(14%) sepia(80%) saturate(2000%) hue-rotate(210deg)',
-                }}
-            />
+            <VUTLogo size={52} />
           </div>
 
           {/* Brand heading — bold, centred, matching screenshot */}

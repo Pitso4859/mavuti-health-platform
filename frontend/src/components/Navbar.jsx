@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   IconMenu, IconX, IconUser, IconLogOut,
   IconLayoutDashboard, IconCalendar, IconShield,
+  VUTLogo,
 } from './Icons';
 
 export default function Navbar() {
@@ -19,17 +20,9 @@ export default function Navbar() {
     <nav className="navbar" role="navigation" aria-label="Main navigation">
       <div className="container navbar-inner">
 
-        {/* Brand — real VUT logo PNG */}
+        {/* ── Brand — SVG VUT logo (no broken PNG filter) ── */}
         <Link to={isAdmin ? '/admin' : '/'} className="navbar-brand" onClick={close}>
-          <img
-            src="/images/vut_logo.png"
-            alt="VUT"
-            style={{
-              height: 42,
-              width: 'auto',
-              filter: 'invert(1) brightness(0) saturate(100%) invert(14%) sepia(80%) saturate(2000%) hue-rotate(210deg)',
-            }}
-          />
+          <VUTLogo size={42} />
           <div className="navbar-brand-text">
             <span className="navbar-brand-name">Mavuti Health</span>
             <span className="navbar-brand-sub">VUT Clinic Platform</span>
@@ -47,9 +40,11 @@ export default function Navbar() {
 
         {isAdmin && (
           <ul className="navbar-nav" role="list">
-            <li><NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-              <IconShield size={14} /> Admin Portal
-            </NavLink></li>
+            <li>
+              <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                <IconShield size={14} /> Admin Portal
+              </NavLink>
+            </li>
           </ul>
         )}
 
@@ -100,7 +95,11 @@ export default function Navbar() {
         <>
           <ul className="navbar-nav open" role="list">
             {isAdmin ? (
-              <li><NavLink to="/admin" onClick={close} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><IconShield size={14} /> Admin Portal</NavLink></li>
+              <li>
+                <NavLink to="/admin" onClick={close} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  <IconShield size={14} /> Admin Portal
+                </NavLink>
+              </li>
             ) : (
               <>
                 <li><NavLink to="/"         onClick={close} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>Home</NavLink></li>
