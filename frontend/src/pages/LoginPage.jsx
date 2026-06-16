@@ -1,59 +1,231 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { IconAlertCircle } from '../components/Icons';
+import {
+  IconAlertCircle,
+  IconGraduationCap,
+  IconBriefcase,
+  IconShield,
+  IconChevronDown,
+  IconChevronUp,
+  IconCheck,
+  IconUser,
+} from '../components/Icons';
 
-// Login options matching the VUTela toggle (screenshot images)
+/* ─── Role definitions ────────────────────────────────────── */
 const LOGIN_OPTIONS = [
   {
     id: 'STUDENT',
-    icon: '🎓',
+    Icon: IconGraduationCap,
     label: 'VUT – Student Login',
     subtitle: 'Login with your student number & password',
     placeholder: 'Student number e.g. 221386653',
+    fieldLabel: 'Student Number',
+    color: '#0033a0',   /* VUT navy  */
+    bg:    '#0033a0',
   },
   {
     id: 'EMPLOYEE',
-    icon: '🏫',
+    Icon: IconBriefcase,
     label: 'VUT – Instructor / Staff Login',
     subtitle: 'Login with your employee number & password',
     placeholder: 'Employee number e.g. 4557545664',
+    fieldLabel: 'Employee Number',
+    color: '#1a6b3c',   /* green     */
+    bg:    '#1a6b3c',
   },
   {
     id: 'ADMIN',
-    icon: '🔐',
-    label: 'Admin Login',
-    subtitle: 'System administrator access',
+    Icon: IconShield,
+    label: 'System Administrator',
+    subtitle: 'System Administrator',
     placeholder: 'Admin number',
+    fieldLabel: 'Admin Number',
+    color: '#b45309',   /* amber     */
+    bg:    '#b45309',
   },
 ];
 
+/* ─── Dropdown ────────────────────────────────────────────── */
+function RoleDropdown({ selected, onChange }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  const pick = (opt) => { onChange(opt); setOpen(false); };
+
+  return (
+      <div ref={wrapRef} style={{ position: 'relative' }}>
+
+        {/* ── Trigger ── */}
+        <button
+            type="button"
+            onClick={() => setOpen(o => !o)}
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              width: '100%',
+              padding: '0 16px',
+              height: 52,
+              background: '#fff',
+              border: `1.5px solid ${open ? '#0033a0' : '#d1d9ec'}`,
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              boxShadow: open ? '0 0 0 3px rgba(0,51,160,0.13)' : 'none',
+              transition: 'border-color 150ms, box-shadow 150ms',
+            }}
+        >
+          {/* grey label + icon on the left */}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+          <IconUser size={16} style={{ color: '#9baac4', flexShrink: 0 }} />
+          <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+            <span style={{ fontSize: 10, color: '#9baac4', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Account type
+            </span>
+            <span style={{ fontSize: 14, color: selected ? '#1a2338' : '#9baac4', fontWeight: selected ? 500 : 400 }}>
+              {selected ? selected.label : 'Select your account type…'}
+            </span>
+          </span>
+        </span>
+          {open
+              ? <IconChevronUp  size={18} style={{ color: '#9baac4', flexShrink: 0 }} />
+              : <IconChevronDown size={18} style={{ color: '#9baac4', flexShrink: 0 }} />
+          }
+        </button>
+
+        {/* ── List ── */}
+        {open && (
+            <ul
+                role="listbox"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 0, right: 0,
+                  background: '#fff',
+                  border: '1.5px solid #0033a0',
+                  borderRadius: 10,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
+                  zIndex: 700,
+                  listStyle: 'none',
+                  margin: 0,
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+            >
+              {LOGIN_OPTIONS.map((opt) => {
+                const active = selected?.id === opt.id;
+                return (
+                    <li
+                        key={opt.id}
+                        role="option"
+                        aria-selected={active}
+                        tabIndex={0}
+                        onClick={() => pick(opt)}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && pick(opt)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 14,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          background: active ? '#f0f4ff' : 'transparent',
+                          outline: 'none',
+                          transition: 'background 120ms',
+                        }}
+                        onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f7f9ff'; }}
+                        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      {/* Coloured circle icon */}
+                      <span style={{
+                        width: 38, height: 38,
+                        borderRadius: '50%',
+                        background: opt.bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                  <opt.Icon size={18} style={{ color: '#fff' }} />
+                </span>
+
+                      {/* Text */}
+                      <span style={{ flex: 1 }}>
+                  <span style={{
+                    display: 'block',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#1a2338',
+                    lineHeight: 1.3,
+                  }}>
+                    {opt.label}
+                  </span>
+                  <span style={{
+                    display: 'block',
+                    fontSize: 12,
+                    color: '#9baac4',
+                    marginTop: 1,
+                  }}>
+                    {opt.subtitle}
+                  </span>
+                </span>
+
+                      {/* Checkmark */}
+                      {active && (
+                          <IconCheck size={17} style={{ color: '#0033a0', flexShrink: 0 }} />
+                      )}
+                    </li>
+                );
+              })}
+            </ul>
+        )}
+      </div>
+  );
+}
+
+/* ─── LoginPage ───────────────────────────────────────────── */
 export default function LoginPage() {
-  const [selected, setSelected] = useState(null); // which toggle was clicked
+  const [selected, setSelected] = useState(null);
   const [form, setForm]         = useState({ institutionNumber: '', password: '' });
   const [error, setError]       = useState(null);
   const [submitting, setSub]    = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const { login }  = useAuth();
-  const navigate   = useNavigate();
-  const location   = useLocation();
-  const from       = location.state?.from?.pathname || '/dashboard';
+  const { login } = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const from      = location.state?.from?.pathname || '/dashboard';
 
   const set = (f) => (e) => setForm(p => ({ ...p, [f]: e.target.value }));
 
-  const handleSelect = (opt) => {
+  const handleRoleChange = (opt) => {
     setSelected(opt);
     setForm({ institutionNumber: '', password: '' });
     setError(null);
+    setShowForm(true);
   };
 
   const handleBack = () => {
+    setShowForm(false);
     setSelected(null);
     setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selected) { setError('Please select your account type first.'); return; }
     setError(null);
     setSub(true);
     try {
@@ -67,136 +239,325 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="vutela-page">
-      {/* Left — campus photo background */}
-      <div className="vutela-bg" />
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'row',
+        paddingTop: 0,
+        background: '#fff',
+      }}>
 
-      {/* Right — login panel */}
-      <div className="vutela-panel">
-        {/* VUT Logo (real PNG from screenshots) */}
-        <div className="vutela-logo-wrap">
-          <img
-            src="/images/vut_logo.png"
-            alt="Vaal University of Technology"
-            className="vutela-logo-img"
-          />
+        {/* ════════════════════════════════════
+          LEFT — campus background panel
+          (navy gradient + VUT crest watermark)
+          ════════════════════════════════════ */}
+        <div style={{
+          flex: 1,
+          minHeight: '100vh',
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0033a0 0%, #001f62 55%, #FFD100 140%)',
+        }}>
+          {/* subtle diagonal shape overlay */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: `
+            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255,209,0,0.18) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 80% at 80% 20%, rgba(0,20,80,0.5) 0%, transparent 60%)
+          `,
+          }} />
+
+          {/* VUT crest centred */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 24,
+          }}>
+            <img
+                src="/images/vut_logo.png"
+                alt=""
+                aria-hidden="true"
+                style={{
+                  width: 160,
+                  opacity: 0.92,
+                  filter: 'brightness(0) invert(1)',
+                  userSelect: 'none',
+                }}
+            />
+            <div style={{ textAlign: 'center', color: '#fff' }}>
+              <p style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 800,
+                fontSize: '1.45rem',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                lineHeight: 1.25,
+              }}>
+                Vaal University<br />of Technology
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="vutela-brand">
-          <h1 className="vutela-title">Mavuti Health Clinic</h1>
-          <p className="vutela-sub">Vaal University of Technology</p>
-          <p className="vutela-tagline">Inspiring thought. Shaping talent.</p>
-        </div>
+        {/* ════════════════════════════════════
+          RIGHT — white login panel
+          ════════════════════════════════════ */}
+        <div style={{
+          width: 480,
+          minHeight: '100vh',
+          background: '#fff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          padding: '48px 44px 28px',
+          boxShadow: '-8px 0 40px rgba(0,0,0,0.12)',
+          overflowY: 'auto',
+          flexShrink: 0,
+        }}>
 
-        {!selected ? (
-          /* ── Toggle selector — like VUTela dropdown ── */
-          <div className="vutela-selector">
-            <p className="vutela-selector-label">Sign in with your VUT account</p>
-
-            {LOGIN_OPTIONS.map((opt) => (
-              <button
-                key={opt.id}
-                className="vutela-option-btn"
-                onClick={() => handleSelect(opt)}
-                type="button"
-              >
-                <span className="vutela-option-icon">{opt.icon}</span>
-                <span className="vutela-option-text">
-                  <span className="vutela-option-label">{opt.label}</span>
-                  <span className="vutela-option-sub">{opt.subtitle}</span>
-                </span>
-                <span className="vutela-option-arrow">›</span>
-              </button>
-            ))}
-
-            <div className="vutela-divider">
-              <span>New to the platform?</span>
-            </div>
-            <Link to="/register" className="vutela-register-btn">
-              Create an account
-            </Link>
+          {/* Logo */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <img
+                src="/images/vut_logo.png"
+                alt="Vaal University of Technology"
+                style={{
+                  height: 72,
+                  width: 'auto',
+                  objectFit: 'contain',
+                  /* render the white-on-dark PNG in navy on the white panel */
+                  filter: 'brightness(0) saturate(100%) invert(14%) sepia(80%) saturate(2000%) hue-rotate(210deg)',
+                }}
+            />
           </div>
-        ) : (
-          /* ── Login form for selected role ── */
-          <div className="vutela-form-wrap">
-            <button className="vutela-back-btn" onClick={handleBack} type="button">
-              ‹ Back
-            </button>
 
-            <div className="vutela-form-header">
-              <span style={{ fontSize: 32 }}>{selected.icon}</span>
-              <div>
-                <h2 className="vutela-form-title">{selected.label}</h2>
-                <p className="vutela-form-sub">{selected.subtitle}</p>
-              </div>
-            </div>
-
-            {error && (
-              <div className="alert alert-error" style={{ marginBottom: 16 }}>
-                <IconAlertCircle size={16} />
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="instNum">
-                  {selected.id === 'STUDENT' ? 'Student Number' :
-                   selected.id === 'EMPLOYEE' ? 'Employee Number' : 'Admin Number'}
-                </label>
-                <input
-                  id="instNum"
-                  type="text"
-                  className="form-input"
-                  placeholder={selected.placeholder}
-                  value={form.institutionNumber}
-                  onChange={set('institutionNumber')}
-                  required
-                  autoFocus
-                  inputMode="numeric"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="pw">Password</label>
-                <input
-                  id="pw"
-                  type="password"
-                  className="form-input"
-                  placeholder="Enter your password"
-                  value={form.password}
-                  onChange={set('password')}
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary btn-full"
-                style={{ padding: '14px', fontSize: '1rem', marginTop: 4 }}
-                disabled={submitting || !form.institutionNumber || !form.password}
-              >
-                {submitting
-                  ? <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Signing in…</>
-                  : `Sign in as ${selected.id === 'STUDENT' ? 'Student' : selected.id === 'EMPLOYEE' ? 'Staff' : 'Admin'}`
-                }
-              </button>
-            </form>
-
-            {import.meta.env.DEV && (
-              <div style={{ marginTop: 16, padding: 12, background: 'rgba(0,51,160,0.06)', borderRadius: 8, fontSize: 11, color: 'var(--gray-500)', lineHeight: 1.7 }}>
-                <strong>Dev:</strong> Student: <code>221386653</code> / <code>Student@123</code><br />
-                Employee: <code>4557545664</code> / <code>Employee@123</code>
-              </div>
-            )}
+          {/* Brand heading — bold, centred, matching screenshot */}
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.55rem',
+              fontWeight: 800,
+              color: '#0a0a0a',
+              lineHeight: 1.2,
+              marginBottom: 4,
+            }}>
+              Mavuti Health Clinic
+            </h1>
+            <p style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              color: '#0033a0',
+              marginBottom: 4,
+            }}>
+              Vaal University of Technology
+            </p>
+            <p style={{ fontSize: 13, color: '#9baac4', fontStyle: 'italic' }}>
+              Inspiring thought. Shaping talent.
+            </p>
           </div>
-        )}
 
-        <div className="vutela-footer">
-          <p>© {new Date().getFullYear()} Vaal University of Technology · Health Clinic Platform</p>
+          {/* ── Main content area ── */}
+          {!showForm ? (
+              /* ════ Step 1: dropdown selector ════ */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flex: 1 }}>
+                <p style={{
+                  textAlign: 'center',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: '#4a5878',
+                  marginBottom: 16,
+                }}>
+                  Sign in with your VUT account
+                </p>
+
+                <RoleDropdown selected={selected} onChange={handleRoleChange} />
+
+                {error && (
+                    <div className="alert alert-error" style={{ marginTop: 14 }}>
+                      <IconAlertCircle size={16} />{error}
+                    </div>
+                )}
+
+                {/* ── New to platform divider + button ── */}
+                <div style={{ marginTop: 'auto', paddingTop: 32 }}>
+                  {/* dashed divider matching screenshot */}
+                  <p style={{
+                    textAlign: 'center',
+                    fontSize: 13,
+                    color: '#9baac4',
+                    marginBottom: 14,
+                    position: 'relative',
+                  }}>
+                    -- New to the platform? --
+                  </p>
+
+                  <Link
+                      to="/register"
+                      style={{
+                        display: 'block',
+                        textAlign: 'center',
+                        padding: '14px',
+                        background: '#0033a0',
+                        borderRadius: 10,
+                        color: '#fff',
+                        fontWeight: 700,
+                        fontSize: 15,
+                        textDecoration: 'none',
+                        transition: 'background 150ms',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#001f62'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#0033a0'}
+                  >
+                    Create an account
+                  </Link>
+                </div>
+              </div>
+
+          ) : (
+              /* ════ Step 2: login form ════ */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
+                {/* Back */}
+                <button
+                    type="button"
+                    onClick={handleBack}
+                    style={{
+                      alignSelf: 'flex-start',
+                      background: 'none',
+                      border: 'none',
+                      color: '#0033a0',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      cursor: 'pointer',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginBottom: 4,
+                    }}
+                >
+                  ‹ Back
+                </button>
+
+                {/* Selected role header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  padding: '12px 16px',
+                  background: '#f0f4ff',
+                  borderRadius: 10,
+                  borderLeft: '3px solid #0033a0',
+                  marginBottom: 4,
+                }}>
+              <span style={{
+                width: 38, height: 38,
+                borderRadius: '50%',
+                background: selected.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <selected.Icon size={18} style={{ color: '#fff' }} />
+              </span>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#1a2338', lineHeight: 1.2 }}>
+                      {selected.label}
+                    </p>
+                    <p style={{ fontSize: 12, color: '#9baac4', marginTop: 2 }}>
+                      {selected.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="alert alert-error">
+                      <IconAlertCircle size={16} />{error}
+                    </div>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="instNum">
+                      {selected.fieldLabel}
+                    </label>
+                    <input
+                        id="instNum"
+                        type="text"
+                        className="form-input"
+                        placeholder={selected.placeholder}
+                        value={form.institutionNumber}
+                        onChange={set('institutionNumber')}
+                        required
+                        autoFocus
+                        inputMode="numeric"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="pw">Password</label>
+                    <input
+                        id="pw"
+                        type="password"
+                        className="form-input"
+                        placeholder="Enter your password"
+                        value={form.password}
+                        onChange={set('password')}
+                        required
+                        autoComplete="current-password"
+                    />
+                  </div>
+
+                  <button
+                      type="submit"
+                      className="btn btn-primary btn-full"
+                      style={{ padding: '14px', fontSize: '1rem', marginTop: 4 }}
+                      disabled={submitting || !form.institutionNumber || !form.password}
+                  >
+                    {submitting
+                        ? <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Signing in…</>
+                        : `Sign in`
+                    }
+                  </button>
+                </form>
+
+                {import.meta.env.DEV && (
+                    <div style={{
+                      marginTop: 8, padding: '10px 14px',
+                      background: 'rgba(0,51,160,0.05)',
+                      border: '1px dashed #d1d9ec',
+                      borderRadius: 8, fontSize: 11,
+                      color: '#6b7d9e', lineHeight: 1.7,
+                    }}>
+                      <strong>Dev —</strong> Student: <code>221386653</code> / <code>Student@123</code><br />
+                      Employee: <code>4557545664</code> / <code>Employee@123</code>
+                    </div>
+                )}
+
+                <div style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 16 }}>
+                  <span style={{ fontSize: 13, color: '#9baac4' }}>New here? </span>
+                  <Link to="/register" style={{ fontSize: 13, color: '#0033a0', fontWeight: 600 }}>
+                    Create an account
+                  </Link>
+                </div>
+              </div>
+          )}
+
+          {/* Footer */}
+          <div style={{
+            marginTop: 28,
+            textAlign: 'center',
+            fontSize: 11,
+            color: '#c8cfe0',
+          }}>
+            © {new Date().getFullYear()} Vaal University of Technology · Health Clinic Platform
+          </div>
         </div>
       </div>
-    </div>
   );
 }
