@@ -122,12 +122,12 @@ public class AiHealthServiceImpl implements AiHealthService {
                     .chatResponse();
 
             // 4. Extract reply text
-            String reply = response.getResult().getOutput().getContent();
+            String reply = response.getResult().getOutput().getText();
 
             // 5. Extract token usage (Spring AI surfaces this uniformly)
             int tokensUsed = 0;
             if (response.getMetadata() != null && response.getMetadata().getUsage() != null) {
-                Long total = response.getMetadata().getUsage().getTotalTokens();
+                Integer total = response.getMetadata().getUsage().getTotalTokens();
                 if (total != null) tokensUsed = total.intValue();
             }
 
