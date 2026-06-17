@@ -1,23 +1,35 @@
-# render.yaml — Render.com Infrastructure as Code
-# Docs: https://render.com/docs/blueprint-spec
-
 services:
-  # ── Spring Boot API ───────────────────────────────────────────
   - type: web
     name: mavuti-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend          # <── build context = backend/ folder
+    dockerContext: ./backend
     plan: free
     region: oregon
 
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: mavuti-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: mavuti-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: mavuti-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: mavuti-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: mavuti-db
+          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRATION_MS
@@ -30,12 +42,11 @@ services:
     healthCheckPath: /actuator/health
     autoDeploy: true
 
-  # ── React Frontend (Nginx) ────────────────────────────────────
   - type: web
     name: mavuti-health
     runtime: docker
     dockerfilePath: ./frontend/Dockerfile
-    dockerContext: ./frontend         # <── build context = frontend/ folder
+    dockerContext: ./frontend
     plan: free
     region: oregon
 
@@ -45,7 +56,6 @@ services:
 
     autoDeploy: true
 
-# ── PostgreSQL Database ──────────────────────────────────────────
 databases:
   - name: mavuti-db
     plan: free
