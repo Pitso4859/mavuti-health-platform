@@ -20,12 +20,26 @@ spring:
         max-size: 16
         queue-capacity: 200
 
-  # Jackson: serialize Java 8 date/time correctly
   jackson:
     serialization:
       write-dates-as-timestamps: false
     deserialization:
       fail-on-unknown-properties: false
+
+  # -------------------------------------------------------
+  # Spring AI — using OpenAI starter pointed at Gemini's
+  # OpenAI-compatible endpoint (no GCP project required).
+  # Docs: https://ai.google.dev/gemini-api/docs/openai
+  # -------------------------------------------------------
+  ai:
+    openai:
+      api-key: ${GEMINI_API_KEY:}
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai
+      chat:
+        options:
+          model: gemini-1.5-flash
+          temperature: 0.3
+          max-tokens: 1024
 
 server:
   port: ${PORT:${SERVER_PORT:8080}}
@@ -36,21 +50,12 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-key-change-me-in-production-32bytes!}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}    # 24 h
-    refresh-expiration-ms: ${JWT_REFRESH_MS:604800000} # 7 days
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    refresh-expiration-ms: ${JWT_REFRESH_MS:604800000}
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
-  # Gemini AI configuration
-  gemini:
-    api-key: ${GEMINI_API_KEY:}
-    base-url: https://generativelanguage.googleapis.com/v1beta/models
-    model: gemini-1.5-flash
-    max-tokens: 1024
-    temperature: 0.3
-
-  # Rate limiting: AI endpoint is expensive - limit per user/IP
   rate-limit:
     ai-requests-per-minute: 10
     auth-requests-per-minute: 20
@@ -72,4 +77,4 @@ springdoc:
   info:
     title: Mavuti Health Platform API
     version: 2.0.0
-    description: VUT Health Clinic API with AI-powered health assistant
+    description: VUT Health Clinic API with Spring AI-powered health assistant
