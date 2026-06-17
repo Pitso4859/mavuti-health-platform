@@ -1,14 +1,34 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
+    # -----------------------------------------------------------------------
+    # FIX: DATABASE_URL on Render contains embedded credentials in the format:
+    #   jdbc:postgresql://username:password@host/dbname
+    # The PostgreSQL JDBC driver rejects that format ("claims to not accept
+    # jdbcUrl") because it expects credentials passed separately, not inlined.
+    #
+    # Solution: Build the URL from the individual DB_HOST / DB_PORT / DB_NAME
+    # vars that Render already provides, and pass USERNAME/PASSWORD separately.
+    # This is the correct JDBC format: jdbc:postgresql://host:port/dbname
+    # -----------------------------------------------------------------------
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Render free-tier Postgres drops idle connections after ~5 min;
+      # keep-alive prevents HikariCP from handing out a stale connection.
+      keepalive-time: 60000
+      connection-timeout: 30000
+      maximum-pool-size: 5
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     hibernate:
+      # validate = Hibernate checks the schema matches entities but does NOT
+      # alter it. Safe for production; run migrations manually or via Flyway.
       ddl-auto: validate
+
   ai:
     openai:
       api-key: ${GEMINI_API_KEY}
@@ -23,4 +43,5 @@ logging:
   level:
     za.ac.vut.mavuti: INFO
     root: WARN
-    org.springframework.ai: DEBUG
+    # Set to INFO (not DEBUG) in prod — DEBUG logs every Spring AI HTTP call
+    org.springframework.ai: INFO
