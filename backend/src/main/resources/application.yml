@@ -26,15 +26,11 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
-  # -------------------------------------------------------
-  # Spring AI — using OpenAI starter pointed at Gemini's
-  # OpenAI-compatible endpoint (no GCP project required).
-  # Docs: https://ai.google.dev/gemini-api/docs/openai
-  # -------------------------------------------------------
+  # Spring AI — Gemini via OpenAI-compatible endpoint
   ai:
     openai:
       api-key: ${GEMINI_API_KEY:}
-      base-url: https://generativelanguage.googleapis.com/v1beta/openai
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai/
       chat:
         options:
           model: gemini-1.5-flash
@@ -77,4 +73,4 @@ springdoc:
   info:
     title: Mavuti Health Platform API
     version: 2.0.0
-    description: VUT Health Clinic API with Spring AI-powered health assistant
+    description: VUT Health Clinic API with Spring AI + Gemini assistant

@@ -7,7 +7,6 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 import za.ac.vut.mavuti.dto.AiDtos.AiChatRequest;
@@ -18,162 +17,148 @@ import za.ac.vut.mavuti.service.AiHealthService;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Spring AI-powered implementation of the Mavuti health assistant.
- *
- * <p>Replaces the raw WebClient/Gemini REST approach with the Spring AI
- * {@link ChatClient} abstraction. Benefits:</p>
- * <ul>
- *   <li>Model-agnostic: swap Gemini for Claude/OpenAI by changing a dependency + config</li>
- *   <li>Built-in prompt fluent API — no manual JSON map construction</li>
- *   <li>Structured response via {@link ChatResponse} — token metadata included</li>
- *   <li>Testable via {@link org.springframework.ai.chat.model.ChatModel} mock</li>
- * </ul>
- *
- * <p><b>Safety guardrails:</b> A {@link SystemMessage} constrains the model to
- * health topics only and directs crises to VUT clinic numbers. Emergency keywords
- * still short-circuit to a hard-coded response before any API call.</p>
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AiHealthServiceImpl implements AiHealthService {
 
-    /** Spring AI auto-configures this bean from spring.ai.vertex.ai.gemini.* properties. */
+    // Inject ChatClient.Builder (provided by AiConfig)
     private final ChatClient chatClient;
 
-    // -----------------------------------------------------------------------
-    // Emergency guardrail — bypasses AI for crisis keywords
-    // -----------------------------------------------------------------------
+    public AiHealthServiceImpl(ChatClient.Builder chatClientBuilder) {
+        this.chatClient = chatClientBuilder.build();
+    }
+
+    // ── System Prompt ──────────────────────────────────────────────────────────
+
+    private static final String SYSTEM_PROMPT = """
+            You are the Mavuti Health Assistant — a helpful, professional, and empathetic AI
+            health assistant for the Vaal University of Technology (VUT) Health Clinic in
+            Vanderbijlpark, South Africa.
+
+            YOUR ROLE:
+            - Provide accurate general health information and wellness education
+            - Help VUT students and staff understand health concepts
+            - Guide users on booking clinic appointments (online at mavuti-health.onrender.com)
+            - Explain clinic services: General Consultation, Health Screening, Mental Health
+              Counselling, Family Planning, Chronic Disease Management, Emergency Care
+            - Offer wellness tips for student life: stress management, sleep, nutrition, exercise
+            - Provide first-aid guidance for minor issues
+
+            VUT CLINIC INFORMATION:
+            - Hours: Monday to Friday, 8:00 AM to 4:30 PM (closed weekends and public holidays)
+            - Urgent care (during hours): (016) 950-9000
+            - Emergency line: (016) 950-9111
+            - After-hours emergency: (016) 950-9595
+            - Location: VUT Main Campus, Vanderbijlpark, Gauteng
+
+            BOOKING AN APPOINTMENT:
+            1. Go to the Appointment page and click Book
+            2. Select your service, choose a date, pick a time slot
+            3. Click Confirm Booking
+            - Book at least 24 hours in advance
+            - Arrive 10 minutes early with your student/staff ID and medical aid card
+            - Cancel at least 6 hours before to avoid fees
+
+            STRICT RULES you MUST follow at all times:
+            - NEVER diagnose medical conditions
+            - NEVER recommend specific prescription medications or dosages
+            - ALWAYS recommend professional consultation for specific or serious symptoms
+            - ALWAYS direct emergencies to (016) 950-9111 or 112 immediately
+            - ONLY discuss health, wellness, and clinic-related topics
+            - Politely decline off-topic requests and redirect to health topics
+
+            COMMUNICATION STYLE:
+            - Warm, professional, and non-judgmental
+            - Use simple, clear language appropriate for university students
+            - Be culturally sensitive to the South African context
+            - Respond in the same language the user writes in (English, Sesotho, Sepedi, Zulu)
+            - Keep responses concise and structured, use bullet points where helpful
+            - Format key information in bold for scannability
+            """;
+
+    // ── Emergency Detection ────────────────────────────────────────────────────
 
     private static final List<String> EMERGENCY_KEYWORDS = List.of(
-            "suicide", "kill myself", "self harm", "overdose", "emergency",
-            "unconscious", "dying", "heart attack", "chest pain", "can't breathe"
+            "suicide", "kill myself", "want to die", "self harm", "self-harm",
+            "overdose", "unconscious", "dying", "heart attack", "chest pain",
+            "can't breathe", "cannot breathe", "stroke", "seizure", "bleeding heavily"
     );
 
     private static final String EMERGENCY_RESPONSE = """
-            ⚠️ **This sounds like a medical emergency.**
-            
-            Please seek immediate help:
-            
-            🆘 **VUT Emergency Line: (016) 950-9111** (24/7)
-            🏥 **Vanderbijlpark Medi-Clinic: (016) 931-5000**
-            📞 **National Emergency: 112**
-            🧠 **South African Depression Helpline: 0800 567 567**
-            
+            \u26a0\ufe0f **This sounds like a medical emergency.**
+
+            Please seek immediate help right now:
+
+            \ud83c\udd98 **VUT Emergency Line: (016) 950-9111** (available 24/7)
+            \ud83c\udfe5 **Vanderbijlpark Medi-Clinic: (016) 931-5000**
+            \ud83d\udcde **National Emergency Services: 112**
+            \ud83e\udde0 **SA Depression & Anxiety Helpline: 0800 567 567** (free, 24/7)
+            \ud83d\udc99 **SADAG Crisis Line: 0800 21 22 23** (free, 24/7)
+
             Please call one of these numbers right now. You are not alone.
             """;
 
-    // -----------------------------------------------------------------------
-    // System prompt
-    // -----------------------------------------------------------------------
-
-    private static final String SYSTEM_PROMPT = """
-            You are the Mavuti Health Assistant — a helpful, professional, and empathetic AI \
-            health assistant for the Vaal University of Technology (VUT) Health Clinic in \
-            Vanderbijlpark, South Africa.
-            
-            YOUR ROLE:
-            - Provide general health information and education
-            - Help students and staff understand health concepts
-            - Guide users on how to book clinic appointments
-            - Explain clinic services: General Consultation, Health Screening, Mental Health \
-              Counseling, Lab Tests, Immunization, and Pharmacy
-            - Offer wellness tips relevant to student life (stress, sleep, nutrition, exercise)
-            - Provide information about VUT clinic hours: Mon-Fri 8:00-17:00, Sat 9:00-12:00
-            
-            STRICT LIMITS — you MUST:
-            - NEVER diagnose medical conditions
-            - NEVER prescribe or recommend specific medications
-            - ALWAYS recommend professional medical consultation for specific symptoms
-            - ALWAYS direct emergencies to (016) 950-9111 or 112
-            - ONLY discuss health-related topics; politely decline off-topic requests
-            
-            COMMUNICATION STYLE:
-            - Warm, professional, and non-judgmental
-            - Use simple, clear language (many users are students)
-            - Be culturally sensitive (South African university context)
-            - Respond in the same language the user writes in (English, Sesotho, Sepedi)
-            
-            CLINIC CONTACT: (016) 950-9000 | Emergency: (016) 950-9111
-            """;
-
-    // -----------------------------------------------------------------------
-    // Core chat method
-    // -----------------------------------------------------------------------
+    // ── Main chat method ───────────────────────────────────────────────────────
 
     @Override
     public AiChatResponse chat(AiChatRequest request, String userId) {
-        // 1. Emergency keyword check — never call AI for crises
-        if (isEmergency(request.message())) {
+
+        // 1. Emergency keyword check — never route crisis messages to the AI
+        String lower = request.message().toLowerCase();
+        boolean isEmergency = EMERGENCY_KEYWORDS.stream().anyMatch(lower::contains);
+        if (isEmergency) {
             log.warn("Emergency keywords detected from user: {}", userId);
             return AiChatResponse.ok(EMERGENCY_RESPONSE, 0);
         }
 
         try {
-            // 2. Build the message list: system + history + current user message
+            // 2. Build message list: system prompt + history + current user message
             List<Message> messages = buildMessages(request);
 
-            // 3. Call Gemini via Spring AI ChatClient
-            //    ChatClient.prompt(Prompt) handles serialisation + deserialisation
-            ChatResponse response = chatClient
+            // 3. Call the AI model via Spring AI
+            // .call().content() is the correct Spring AI 1.0.x fluent API
+            String reply = chatClient
                     .prompt(new Prompt(messages))
                     .call()
-                    .chatResponse();
+                    .content();
 
-            // 4. Extract reply text
-            String reply = response.getResult().getOutput().getText();
-
-            // 5. Extract token usage (Spring AI surfaces this uniformly)
-            int tokensUsed = 0;
-            if (response.getMetadata() != null && response.getMetadata().getUsage() != null) {
-                Integer total = response.getMetadata().getUsage().getTotalTokens();
-                if (total != null) tokensUsed = total.intValue();
+            if (reply == null || reply.isBlank()) {
+                return AiChatResponse.error("No response received. Please try again.");
             }
 
-            log.debug("AI response for user {}: {} tokens used", userId, tokensUsed);
-            return AiChatResponse.ok(reply.trim(), tokensUsed);
+            log.debug("AI response generated for user: {}", userId);
+            return AiChatResponse.ok(reply.trim(), 0);
 
         } catch (Exception e) {
-            log.error("Spring AI call failed for user {}: {}", userId, e.getMessage(), e);
-            return AiChatResponse.error(
-                    "I'm having trouble connecting right now. " +
-                    "For clinic help, please call (016) 950-9000.");
+            log.error("AI error for user {}: {}", userId, e.getMessage());
+
+            String errorMsg = (e.getMessage() != null && e.getMessage().contains("api_key"))
+                    ? "AI assistant is not configured. For help, call (016) 950-9000."
+                    : "I'm having trouble right now. Please try again, or call (016) 950-9000.";
+
+            return AiChatResponse.error(errorMsg);
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
+    // ── Build Spring AI message list ──────────────────────────────────────────
 
-    private boolean isEmergency(String message) {
-        String lower = message.toLowerCase();
-        return EMERGENCY_KEYWORDS.stream().anyMatch(lower::contains);
-    }
-
-    /**
-     * Converts system prompt + conversation history + current message into the
-     * Spring AI {@link Message} list that Prompt accepts.
-     *
-     * <p>History is capped at the last 10 turns to keep token usage bounded.</p>
-     */
     private List<Message> buildMessages(AiChatRequest request) {
         List<Message> messages = new ArrayList<>();
 
-        // System instruction first
+        // System prompt sets the assistant's persona and rules
         messages.add(new SystemMessage(SYSTEM_PROMPT));
 
-        // Conversation history (max 10 turns, oldest-first)
+        // Conversation history gives context for follow-up questions (max 10 turns)
         if (request.history() != null && !request.history().isEmpty()) {
             List<ConversationTurn> limited = request.history().stream()
                     .skip(Math.max(0, request.history().size() - 10))
                     .toList();
 
             for (ConversationTurn turn : limited) {
-                if ("assistant".equals(turn.role())) {
-                    messages.add(new AssistantMessage(turn.content()));
-                } else {
+                if ("user".equals(turn.role())) {
                     messages.add(new UserMessage(turn.content()));
+                } else {
+                    messages.add(new AssistantMessage(turn.content()));
                 }
             }
         }

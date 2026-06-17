@@ -11,8 +11,18 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
+  ai:
+    openai:
+      api-key: ${GEMINI_API_KEY:}
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai/
+      chat:
+        options:
+          model: gemini-1.5-flash
+          temperature: 0.3
+          max-tokens: 1024
 
 logging:
   level:
     za.ac.vut.mavuti: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.ai: DEBUG
