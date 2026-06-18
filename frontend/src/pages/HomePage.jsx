@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import {
   IconStethoscope, IconHeartPulse, IconFlask, IconBrain,
   IconSyringe, IconPill, IconPhone, IconClock,
   IconCalendar, IconChevronRight, IconShield, IconUsers,
-  IconCheckCircle, VUTLogo,
+  IconCheckCircle,
 } from '../components/Icons';
 
 const SERVICES_PREVIEW = [
@@ -32,14 +33,44 @@ const TRUST_POINTS = [
   'Covered by most medical aids',
 ];
 
-// Campus health fair event photos — served from /public/images/
-const EVENT_PHOTOS = [
-  { src: '/images/health-fair-aerial-view.svg',       alt: 'Health fair aerial view — tents and stalls on VUT campus' },
-  { src: '/images/health-screening-consultation.svg', alt: 'Health screening consultation in progress' },
-  { src: '/images/vut-health-fair-staff.svg',         alt: 'VUT health fair staff at information tent' },
-  { src: '/images/hiv-counselling-booth.svg',         alt: 'HIV counselling and testing booth' },
-  { src: '/images/ched-health-wellness-tent.svg',     alt: 'CHED Centre for Health Education and Development tent' },
-  { src: '/images/health-educator-interaction.svg',   alt: 'Health educator interacting with a student' },
+// Campus health fair event photos — slideshow items with captions
+const EVENT_SLIDES = [
+  {
+    src: '/images/health-fair-aerial-view.svg',
+    alt: 'Health fair aerial view — tents and stalls on VUT campus',
+    caption: 'Annual Health Fair',
+    sub: 'Reaching thousands of VUT students every year',
+  },
+  {
+    src: '/images/health-screening-consultation.svg',
+    alt: 'Health screening consultation in progress',
+    caption: 'Health Screening',
+    sub: 'Free blood pressure, glucose and BMI checks on campus',
+  },
+  {
+    src: '/images/vut-health-fair-staff.svg',
+    alt: 'VUT health fair staff at information tent',
+    caption: 'Our Dedicated Staff',
+    sub: 'Qualified healthcare professionals serving the VUT community',
+  },
+  {
+    src: '/images/hiv-counselling-booth.svg',
+    alt: 'HIV counselling and testing booth',
+    caption: 'HIV Counselling & Testing',
+    sub: 'Confidential testing and ARV initiation available on campus',
+  },
+  {
+    src: '/images/ched-health-wellness-tent.svg',
+    alt: 'CHED Centre for Health Education and Development tent',
+    caption: 'CHED Partnership',
+    sub: 'Collaborating with the Centre for Health Education and Development',
+  },
+  {
+    src: '/images/health-educator-interaction.svg',
+    alt: 'Health educator interacting with a student',
+    caption: 'Student Engagement',
+    sub: 'One-on-one health education and awareness sessions',
+  },
 ];
 
 // Awareness campaign posters
@@ -51,7 +82,52 @@ const CAMPAIGN_POSTERS = [
   { src: '/images/teen-suicide-prevention-week-poster.svg',   alt: "Teen Suicide Prevention Week — Change What You Can, Manage What You Can't" },
 ];
 
-/* ── Campus image card — local SVG ── */
+const SLIDE_DURATION = 10000; // 10 seconds
+
+/* ── Personal logo badge (top-left of building card) ── */
+function MyLogoBadge() {
+  return (
+      <div style={{
+        position: 'absolute',
+        top: 14, left: 14,
+        background: 'rgba(0,31,98,0.85)',
+        backdropFilter: 'blur(8px)',
+        borderRadius: 10,
+        padding: '6px 12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        border: '1px solid rgba(255,209,0,0.45)',
+      }}>
+        {/*
+        YOUR LOGO — swap the <img> src below with your actual logo path, e.g.:
+          src="/images/my-logo.png"   or   src="/images/my-logo.svg"
+        The fallback below shows your initials in the VUT gold/navy palette.
+      */}
+        {/* Option A — use your logo image (uncomment and set src):
+      <img src="/images/my-logo.png" alt="My logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+      */}
+
+        {/* Option B — initials badge (active until you add your logo file) */}
+        <div style={{
+          width: 24, height: 24,
+          background: '#FFD100',
+          borderRadius: 5,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 900, fontSize: 11, color: '#001f62', letterSpacing: '-0.5px',
+          flexShrink: 0,
+        }}>
+          PN
+        </div>
+
+        <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, letterSpacing: '0.04em' }}>
+        Pitso Nkotolane
+      </span>
+      </div>
+  );
+}
+
+/* ── Campus image card ── */
 function CampusImageCard() {
   return (
       <div style={{
@@ -64,42 +140,29 @@ function CampusImageCard() {
         maxWidth: 540,
         width: '100%',
       }}>
-        {/* Local VUT building SVG */}
         <img
             src="/images/vut-building-exterior.svg"
             alt="Vaal University of Technology campus building"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
 
         {/* Dark overlay */}
         <div style={{
-          position: 'absolute',
-          inset: 0,
+          position: 'absolute', inset: 0,
           background: 'linear-gradient(180deg, rgba(0,20,80,0.15) 0%, rgba(0,20,80,0.55) 100%)',
         }} />
 
-        {/* Bottom bar — Clinic name badge */}
+        {/* Bottom bar */}
         <div style={{
-          position: 'absolute',
-          bottom: 0, left: 0, right: 0,
+          position: 'absolute', bottom: 0, left: 0, right: 0,
           padding: '16px 20px',
           background: 'rgba(0,20,80,0.7)',
           backdropFilter: 'blur(12px)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
+          display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <div style={{
-            width: 36, height: 36,
-            background: '#FFD100',
-            borderRadius: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
+            width: 36, height: 36, background: '#FFD100', borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <IconShield size={18} style={{ color: '#0033a0' }} />
           </div>
@@ -118,43 +181,156 @@ function CampusImageCard() {
             display: 'flex', alignItems: 'center', gap: 5,
             background: 'rgba(22,163,74,0.25)',
             border: '1px solid rgba(22,163,74,0.5)',
-            borderRadius: 20,
-            padding: '4px 10px',
+            borderRadius: 20, padding: '4px 10px',
           }}>
           <span style={{
-            width: 7, height: 7,
-            background: '#4ade80',
-            borderRadius: '50%',
-            display: 'inline-block',
-            animation: 'pulse 2s infinite',
+            width: 7, height: 7, background: '#4ade80', borderRadius: '50%',
+            display: 'inline-block', animation: 'pulse 2s infinite',
           }} />
             <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 600 }}>Open now</span>
           </div>
         </div>
 
-        {/* Top-left VUT logo badge */}
+        {/* ── YOUR logo badge — top left ── */}
+        <MyLogoBadge />
+      </div>
+  );
+}
+
+/* ── Event slideshow (like VUT official site) ── */
+function EventSlideshow() {
+  const [current, setCurrent] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const total = EVENT_SLIDES.length;
+
+  const goTo = useCallback((idx) => {
+    setCurrent((idx + total) % total);
+    setProgress(0);
+  }, [total]);
+
+  // Auto-advance with progress bar
+  useEffect(() => {
+    setProgress(0);
+    const startTime = Date.now();
+    const tick = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
+      setProgress(pct);
+      if (elapsed >= SLIDE_DURATION) {
+        clearInterval(tick);
+        setCurrent(c => (c + 1) % total);
+        setProgress(0);
+      }
+    }, 50);
+    return () => clearInterval(tick);
+  }, [current, total]);
+
+  const slide = EVENT_SLIDES[current];
+
+  return (
+      <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', background: '#0a1a3c' }}>
+
+        {/* Slide images — crossfade */}
+        <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+          {EVENT_SLIDES.map((s, i) => (
+              <img
+                  key={s.src}
+                  src={s.src}
+                  alt={s.alt}
+                  loading="lazy"
+                  style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    opacity: i === current ? 1 : 0,
+                    transition: 'opacity 0.8s ease',
+                    display: 'block',
+                  }}
+              />
+          ))}
+
+          {/* Gradient overlay */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(0deg, rgba(0,15,60,0.75) 0%, rgba(0,15,60,0.1) 60%)',
+          }} />
+
+          {/* Caption */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '24px 28px 20px',
+          }}>
+            <h3 style={{ color: '#FFD100', fontWeight: 800, fontSize: 20, margin: 0, lineHeight: 1.2 }}>
+              {slide.caption}
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, margin: '4px 0 0', lineHeight: 1.4 }}>
+              {slide.sub}
+            </p>
+          </div>
+
+          {/* Prev / Next arrows */}
+          <button
+              onClick={() => goTo(current - 1)}
+              aria-label="Previous slide"
+              style={{
+                position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)',
+                color: '#fff', borderRadius: '50%', width: 38, height: 38,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1, backdropFilter: 'blur(4px)',
+                transition: 'background 0.2s',
+              }}
+          >‹</button>
+          <button
+              onClick={() => goTo(current + 1)}
+              aria-label="Next slide"
+              style={{
+                position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)',
+                color: '#fff', borderRadius: '50%', width: 38, height: 38,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1, backdropFilter: 'blur(4px)',
+                transition: 'background 0.2s',
+              }}
+          >›</button>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ height: 3, background: 'rgba(255,255,255,0.12)' }}>
+          <div style={{
+            height: '100%', background: '#FFD100',
+            width: `${progress}%`, transition: 'width 0.05s linear',
+          }} />
+        </div>
+
+        {/* Dot indicators + counter */}
         <div style={{
-          position: 'absolute',
-          top: 14, left: 14,
-          background: 'rgba(0,31,98,0.75)',
-          backdropFilter: 'blur(8px)',
-          borderRadius: 10,
-          padding: '6px 10px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          border: '1px solid rgba(255,209,0,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 8, padding: '12px 0 14px',
+          background: '#060e28',
         }}>
-          <VUTLogo size={22} />
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, letterSpacing: '0.04em' }}>
-          VUT
+          {EVENT_SLIDES.map((_, i) => (
+              <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  style={{
+                    width: i === current ? 24 : 8, height: 8,
+                    borderRadius: 4, border: 'none', cursor: 'pointer',
+                    background: i === current ? '#FFD100' : 'rgba(255,255,255,0.25)',
+                    transition: 'width 0.3s ease, background 0.3s ease',
+                    padding: 0,
+                  }}
+              />
+          ))}
+          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginLeft: 8 }}>
+          {current + 1} / {total}
         </span>
         </div>
       </div>
   );
 }
 
-/* ── Event photo gallery ── */
+/* ── Event section with slideshow ── */
 function EventGallery() {
   return (
       <section className="section" style={{ background: '#f8f9fc', borderTop: '1px solid var(--gray-200)' }}>
@@ -168,29 +344,9 @@ function EventGallery() {
             </p>
           </div>
 
-          {/* Photo grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 16,
-            marginBottom: 'var(--s12)',
-          }}>
-            {EVENT_PHOTOS.map(({ src, alt }) => (
-                <div key={src} style={{
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  aspectRatio: '4/3',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                  background: '#e8edf5',
-                }}>
-                  <img
-                      src={src}
-                      alt={alt}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      loading="lazy"
-                  />
-                </div>
-            ))}
+          {/* Slideshow */}
+          <div style={{ maxWidth: 860, margin: '0 auto var(--s12)' }}>
+            <EventSlideshow />
           </div>
 
           {/* Campaign posters strip */}
@@ -205,15 +361,11 @@ function EventGallery() {
             }}>
               {CAMPAIGN_POSTERS.map(({ src, alt }) => (
                   <div key={src} style={{
-                    borderRadius: 10,
-                    overflow: 'hidden',
-                    aspectRatio: '3/4',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
-                    background: '#e8edf5',
+                    borderRadius: 10, overflow: 'hidden', aspectRatio: '3/4',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.10)', background: '#e8edf5',
                   }}>
                     <img
-                        src={src}
-                        alt={alt}
+                        src={src} alt={alt}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                         loading="lazy"
                     />
@@ -282,7 +434,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right — VUT campus image (local SVG) */}
+              {/* Right — VUT campus image */}
               <div className="hero-image-wrap">
                 <CampusImageCard />
               </div>
@@ -335,7 +487,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Event Gallery ─────────────────────────────────────── */}
+        {/* ── Event Gallery (slideshow) ─────────────────────────── */}
         <EventGallery />
 
         {/* ── About VUT strip ───────────────────────────────────── */}
@@ -348,7 +500,6 @@ export default function HomePage() {
           <div className="container">
             <div style={{ display: 'flex', gap: 'var(--s10)', alignItems: 'center', flexWrap: 'wrap' }}>
 
-              {/* VUT logo — local gold/blue SVG */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s5)', flex: '0 0 auto' }}>
                 <img
                     src="/images/vut-logo-gold-blue.svg"
@@ -370,7 +521,6 @@ export default function HomePage() {
 
               <div style={{ width: 1, height: 64, background: 'var(--gray-200)', flexShrink: 0 }} className="divider-v" />
 
-              {/* About blurb */}
               <div style={{ flex: 1, minWidth: 260 }}>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)', lineHeight: 1.7 }}>
                   VUT has been shaping minds and communities since 1966. The Mavuti Health Clinic
@@ -387,17 +537,11 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Anniversary badge */}
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 90, height: 90,
-                borderRadius: '50%',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                width: 90, height: 90, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #0033a0, #001f62)',
-                border: '3px solid #FFD100',
-                flexShrink: 0,
+                border: '3px solid #FFD100', flexShrink: 0,
                 boxShadow: '0 4px 20px rgba(0,51,160,0.25)',
               }}>
                 <span style={{ color: '#FFD100', fontSize: 26, fontWeight: 800, lineHeight: 1 }}>60</span>
@@ -419,7 +563,6 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-2" style={{ gap: 'var(--s8)' }}>
-              {/* Hours card */}
               <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 'var(--radius-lg)', padding: 'var(--s8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s3)', marginBottom: 'var(--s6)' }}>
                   <IconClock size={22} style={{ color: 'var(--vut-gold)' }} />
@@ -435,7 +578,6 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Emergency card */}
               <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 'var(--radius-lg)', padding: 'var(--s8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s3)', marginBottom: 'var(--s6)' }}>
                   <IconPhone size={22} style={{ color: 'var(--vut-gold)' }} />
