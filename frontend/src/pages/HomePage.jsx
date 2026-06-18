@@ -107,7 +107,7 @@ function MyLogoBadge() {
             />
 
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, letterSpacing: '0.04em' }}>
-          Pitso Nkotolane
+          VUT
         </span>
         </div>
     );
