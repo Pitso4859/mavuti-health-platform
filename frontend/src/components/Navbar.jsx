@@ -21,7 +21,7 @@ export default function Navbar() {
 
           {/* ── Brand — SVG VUT logo (no broken PNG filter) ── */}
           <Link to={isAdmin ? '/admin' : '/'} className="navbar-brand" onClick={close}>
-            <img src="/images/vut-logo-blue-circle.svg" alt="VUT logo" style={{ width: 42, height: 42, objectFit: 'contain' }} />
+            <img src="/images/vut-logo-gold-blue.svg" alt="VUT logo" style={{ width: 42, height: 42, objectFit: 'contain' }} />
             <div className="navbar-brand-text">
               <span className="navbar-brand-name">Mavuti Health</span>
               <span className="navbar-brand-sub">VUT Clinic Platform</span>
