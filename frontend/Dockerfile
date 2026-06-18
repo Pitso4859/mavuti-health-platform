@@ -11,7 +11,7 @@ RUN npm install --frozen-lockfile
 COPY . .
 
 # Inject production API URL at build time
-ARG VITE_API_BASE_URL=https://mavuti-api.onrender.com/api/v1
+ARG VITE_API_BASE_URL=https://mavuti-api.onrender.com
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 RUN npm run build
