@@ -50,6 +50,12 @@ app:
     refresh-expiration-ms: ${JWT_REFRESH_MS:604800000}
 
   cors:
+    # FIX: In production this MUST be set to the exact frontend URL.
+    # Add CORS_ALLOWED_ORIGINS as a Render env var on the mavuti-api service:
+    #   Key:   CORS_ALLOWED_ORIGINS
+    #   Value: https://mavuti-health.onrender.com
+    # Multiple origins (e.g. staging + prod) can be comma-separated:
+    #   https://mavuti-health.onrender.com,https://mavuti-staging.onrender.com
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
   rate-limit:

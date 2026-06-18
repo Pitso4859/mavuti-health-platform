@@ -4,7 +4,19 @@
  * Handles 401 (token expired) by clearing auth state.
  */
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+// Normalise whatever VITE_API_BASE_URL is set to:
+//   https://mavuti-api.onrender.com          → https://mavuti-api.onrender.com/api/v1
+//   https://mavuti-api.onrender.com/api/v1   → https://mavuti-api.onrender.com/api/v1  (no change)
+//   https://mavuti-api.onrender.com/api/v1/  → https://mavuti-api.onrender.com/api/v1  (trailing slash stripped)
+//   (not set)                                → http://localhost:8080/api/v1
+function resolveBase(raw) {
+  if (!raw) return 'http://localhost:8080/api/v1';
+  const stripped = raw.replace(/\/+$/, '');           // remove trailing slashes
+  if (stripped.endsWith('/api/v1')) return stripped;  // already correct
+  return `${stripped}/api/v1`;                        // append the missing path
+}
+
+const BASE = resolveBase(import.meta.env.VITE_API_BASE_URL);
 
 function getToken() {
   return localStorage.getItem('mvt_token');
@@ -42,9 +54,9 @@ async function request(path, { method = 'GET', body, auth = true, signal } = {})
       window.dispatchEvent(new Event('auth:expired'));
     }
     const message =
-      data?.message ||
-      data?.error ||
-      (typeof data === 'string' ? data : `Request failed (${res.status})`);
+        data?.message ||
+        data?.error ||
+        (typeof data === 'string' ? data : `Request failed (${res.status})`);
     throw new Error(message);
   }
 
@@ -52,11 +64,11 @@ async function request(path, { method = 'GET', body, auth = true, signal } = {})
 }
 
 const api = {
-  get:    (path, opts)   => request(path, { ...opts, method: 'GET' }),
-  post:   (path, body, opts) => request(path, { ...opts, method: 'POST', body }),
-  put:    (path, body, opts) => request(path, { ...opts, method: 'PUT',  body }),
-  patch:  (path, body, opts) => request(path, { ...opts, method: 'PATCH', body }),
-  delete: (path, opts)   => request(path, { ...opts, method: 'DELETE' }),
+  get:    (path, opts)        => request(path, { ...opts, method: 'GET' }),
+  post:   (path, body, opts)  => request(path, { ...opts, method: 'POST', body }),
+  put:    (path, body, opts)  => request(path, { ...opts, method: 'PUT',  body }),
+  patch:  (path, body, opts)  => request(path, { ...opts, method: 'PATCH', body }),
+  delete: (path, opts)        => request(path, { ...opts, method: 'DELETE' }),
 };
 
 export default api;
