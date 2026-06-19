@@ -78,6 +78,10 @@ public class SecurityConfig {
             "/api/v1/services",
             "/api/v1/services/**",
             "/api/v1/contact",
+            // Availability is safe to expose publicly — it returns only
+            // booked time slots (no patient data), and students need it
+            // before they are logged in to see which slots are free.
+            "/api/v1/appointments/availability",
             "/actuator/health",
             "/actuator/health/**",
             "/swagger-ui/**",
@@ -92,18 +96,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF protection is unnecessary for a stateless, token-based
-            // API consumed by a separate SPA - there is no browser-managed
-            // session cookie for an attacker to ride on.
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // CSRF protection is unnecessary for a stateless, token-based
+                // API consumed by a separate SPA - there is no browser-managed
+                // session cookie for an attacker to ride on.
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
