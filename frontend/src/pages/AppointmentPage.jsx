@@ -10,6 +10,20 @@ const LABELS    = {
 
 function todayIso() { return new Date().toISOString().split('T')[0]; }
 
+/**
+ * Returns true if the slot is in the past for today's date.
+ * Uses the user's LOCAL time so it works in any timezone (including SA, UTC+2).
+ * e.g. if it's 13:30 now, slots 08:00, 09:00, 10:00, 11:00, 13:00 are all past.
+ */
+function isPastSlot(slot, selectedDate) {
+  if (selectedDate !== todayIso()) return false; // future dates — never block
+  const now            = new Date();
+  const [slotH, slotM] = slot.split(':').map(Number);
+  const slotMinutes    = slotH * 60 + slotM;
+  const nowMinutes     = now.getHours() * 60 + now.getMinutes();
+  return slotMinutes <= nowMinutes;
+}
+
 export default function AppointmentPage() {
   const [services,      setServices]     = useState([]);
   const [serviceType,   setServiceType]  = useState('');
@@ -43,6 +57,12 @@ export default function AppointmentPage() {
       setError('Please select a service, date and time.');
       return;
     }
+    // Extra guard: re-check on submit in case time passed while page was open
+    if (isPastSlot(selectedTime, date)) {
+      setError('That time slot has already passed. Please select a future time.');
+      setSelectedTime('');
+      return;
+    }
     setSub(true);
     try {
       await appointmentsApi.book({ serviceType, appointmentDate: date, appointmentTime: `${selectedTime}:00`, reason });
@@ -58,7 +78,14 @@ export default function AppointmentPage() {
     }
   };
 
-  const isBooked = slot => bookedTimes.some(t => t.startsWith(slot));
+  const isBooked      = slot => bookedTimes.some(t => t.startsWith(slot));
+  const isUnavailable = slot => isBooked(slot) || isPastSlot(slot, date);
+
+  const slotSubLabel = slot => {
+    if (isPastSlot(slot, date)) return 'Passed';
+    if (isBooked(slot))         return 'Booked';
+    return null;
+  };
 
   return (
       <div style={{ minHeight: 'calc(100vh - var(--navbar-h))', background: 'var(--gray-50)' }}>
@@ -150,8 +177,14 @@ export default function AppointmentPage() {
                     <label className="form-label">
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <IconClock size={14} /> Available Times
+                        {date === todayIso() && (
+                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--gray-400)', marginLeft: 4 }}>
+                          — past slots unavailable for today
+                        </span>
+                        )}
                       </div>
                     </label>
+
                     {loadingSlots ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--gray-400)', fontSize: 'var(--text-sm)', padding: 'var(--s3) 0' }}>
                           <span className="spinner" style={{ width: 16, height: 16 }} />
@@ -160,21 +193,26 @@ export default function AppointmentPage() {
                     ) : (
                         <div className="time-slot-grid">
                           {ALL_SLOTS.map(slot => {
-                            const taken    = isBooked(slot);
-                            const selected = selectedTime === slot;
+                            const unavailable = isUnavailable(slot);
+                            const selected    = selectedTime === slot;
+                            const subLabel    = slotSubLabel(slot);
                             return (
                                 <div
                                     key={slot}
-                                    className={`time-slot${selected ? ' selected' : ''}${taken ? ' disabled' : ''}`}
-                                    onClick={() => !taken && setSelectedTime(slot)}
+                                    className={`time-slot${selected ? ' selected' : ''}${unavailable ? ' disabled' : ''}`}
+                                    onClick={() => !unavailable && setSelectedTime(slot)}
                                     role="button"
-                                    tabIndex={taken ? -1 : 0}
+                                    tabIndex={unavailable ? -1 : 0}
                                     aria-pressed={selected}
-                                    aria-disabled={taken}
-                                    onKeyDown={e => e.key === 'Enter' && !taken && setSelectedTime(slot)}
+                                    aria-disabled={unavailable}
+                                    onKeyDown={e => e.key === 'Enter' && !unavailable && setSelectedTime(slot)}
                                 >
                                   {LABELS[slot]}
-                                  {taken && <div style={{ fontSize: 10, marginTop: 2, opacity: 0.6 }}>Booked</div>}
+                                  {subLabel && (
+                                      <div style={{ fontSize: 10, marginTop: 2, opacity: 0.6 }}>
+                                        {subLabel}
+                                      </div>
+                                  )}
                                 </div>
                             );
                           })}
@@ -197,7 +235,7 @@ export default function AppointmentPage() {
                     />
                   </div>
 
-                  {/* ── Confirm Booking button — gold, matches hero Book Appointment ── */}
+                  {/* ── Confirm Booking — gold button ── */}
                   <button
                       type="submit"
                       className="btn btn-lg btn-full"
@@ -231,7 +269,6 @@ export default function AppointmentPage() {
               {/* ── Sidebar ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s4)' }}>
 
-                {/* Info card */}
                 <div className="card" style={{ borderLeft: '4px solid var(--vut-navy)' }}>
                   <h4 className="heading-3" style={{ marginBottom: 'var(--s4)' }}>Before you come</h4>
                   <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--s3)' }}>
@@ -249,7 +286,6 @@ export default function AppointmentPage() {
                   </ul>
                 </div>
 
-                {/* Urgent card */}
                 <div className="card" style={{ background: 'var(--error-bg)', border: '1px solid #fca5a5' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--s3)' }}>
                     <IconPhone size={18} style={{ color: 'var(--error)' }} />
