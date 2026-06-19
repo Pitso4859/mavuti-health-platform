@@ -212,7 +212,7 @@ export default function RegisterPage() {
 
         {/* ── VUT building fills the ENTIRE screen ── */}
         <img
-            src="/images/vut-building-exterior.svg"
+            src="/images/vut_building.svg"
             alt="Vaal University of Technology campus"
             style={{
               position: 'absolute', inset: 0,
