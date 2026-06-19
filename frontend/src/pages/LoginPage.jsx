@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { VUTLogo,
+import {
   IconAlertCircle,
   IconGraduationCap,
   IconBriefcase,
@@ -21,7 +21,7 @@ const LOGIN_OPTIONS = [
     subtitle: 'Login with your student number & password',
     placeholder: 'Student number e.g. 221386653',
     fieldLabel: 'Student Number',
-    color: '#0033a0',   /* VUT navy  */
+    color: '#0033a0',
     bg:    '#0033a0',
   },
   {
@@ -31,7 +31,7 @@ const LOGIN_OPTIONS = [
     subtitle: 'Login with your employee number & password',
     placeholder: 'Employee number e.g. 4557545664',
     fieldLabel: 'Employee Number',
-    color: '#1a6b3c',   /* green     */
+    color: '#1a6b3c',
     bg:    '#1a6b3c',
   },
   {
@@ -41,7 +41,7 @@ const LOGIN_OPTIONS = [
     subtitle: 'System Administrator',
     placeholder: 'Admin number',
     fieldLabel: 'Admin Number',
-    color: '#b45309',   /* amber     */
+    color: '#b45309',
     bg:    '#b45309',
   },
 ];
@@ -64,8 +64,6 @@ function RoleDropdown({ selected, onChange }) {
 
   return (
       <div ref={wrapRef} style={{ position: 'relative' }}>
-
-        {/* ── Trigger ── */}
         <button
             type="button"
             onClick={() => setOpen(o => !o)}
@@ -87,8 +85,7 @@ function RoleDropdown({ selected, onChange }) {
               transition: 'border-color 150ms, box-shadow 150ms',
             }}
         >
-          {/* grey label + icon on the left */}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
           <IconUser size={16} style={{ color: '#9baac4', flexShrink: 0 }} />
           <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
             <span style={{ fontSize: 10, color: '#9baac4', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
@@ -105,7 +102,6 @@ function RoleDropdown({ selected, onChange }) {
           }
         </button>
 
-        {/* ── List ── */}
         {open && (
             <ul
                 role="listbox"
@@ -150,39 +146,25 @@ function RoleDropdown({ selected, onChange }) {
                         onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f7f9ff'; }}
                         onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
                     >
-                      {/* Coloured circle icon */}
-                      <span style={{
-                        width: 38, height: 38,
-                        borderRadius: '50%',
-                        background: opt.bg,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
+                <span style={{
+                  width: 38, height: 38,
+                  borderRadius: '50%',
+                  background: opt.bg,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
                   <opt.Icon size={18} style={{ color: '#fff' }} />
                 </span>
 
-                      {/* Text */}
                       <span style={{ flex: 1 }}>
-                  <span style={{
-                    display: 'block',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: '#1a2338',
-                    lineHeight: 1.3,
-                  }}>
+                  <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#1a2338', lineHeight: 1.3 }}>
                     {opt.label}
                   </span>
-                  <span style={{
-                    display: 'block',
-                    fontSize: 12,
-                    color: '#9baac4',
-                    marginTop: 1,
-                  }}>
+                  <span style={{ display: 'block', fontSize: 12, color: '#9baac4', marginTop: 1 }}>
                     {opt.subtitle}
                   </span>
                 </span>
 
-                      {/* Checkmark */}
                       {active && (
                           <IconCheck size={17} style={{ color: '#0033a0', flexShrink: 0 }} />
                       )}
@@ -248,27 +230,38 @@ export default function LoginPage() {
       }}>
 
         {/* ════════════════════════════════════
-          LEFT — campus background panel
-          (navy gradient + VUT crest watermark)
-          ════════════════════════════════════ */}
+        LEFT — VUT building photo panel
+        ════════════════════════════════════ */}
         <div style={{
           flex: 1,
           minHeight: '100vh',
           position: 'relative',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, #0033a0 0%, #001f62 55%, #FFD100 140%)',
+          background: '#001f62',
         }}>
-          {/* subtle diagonal shape overlay */}
+          {/* VUT building SVG as full background */}
+          <img
+              src="/images/vut-building-exterior.svg"
+              alt="Vaal University of Technology campus"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                display: 'block',
+              }}
+          />
+
+          {/* Dark overlay so text stays readable */}
           <div style={{
             position: 'absolute',
             inset: 0,
-            background: `
-            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255,209,0,0.18) 0%, transparent 70%),
-            radial-gradient(ellipse 60% 80% at 80% 20%, rgba(0,20,80,0.5) 0%, transparent 60%)
-          `,
+            background: 'linear-gradient(135deg, rgba(0,31,98,0.72) 0%, rgba(0,10,40,0.55) 60%, rgba(0,31,98,0.80) 100%)',
           }} />
 
-          {/* VUT crest centred */}
+          {/* VUT name centred over the image */}
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -276,9 +269,19 @@ export default function LoginPage() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 24,
+            gap: 20,
           }}>
-            <VUTLogo size={100} />
+            {/* Large VUT logo over the building */}
+            <img
+                src="/images/vut-logo-gold-blue.svg"
+                alt="VUT logo"
+                style={{
+                  width: 110,
+                  height: 110,
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))',
+                }}
+            />
             <div style={{ textAlign: 'center', color: '#fff' }}>
               <p style={{
                 fontFamily: 'var(--font-display)',
@@ -287,16 +290,25 @@ export default function LoginPage() {
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 lineHeight: 1.25,
+                textShadow: '0 2px 12px rgba(0,0,0,0.5)',
               }}>
                 Vaal University<br />of Technology
               </p>
             </div>
+
+            {/* Gold bottom bar */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0, left: 0, right: 0,
+              height: 5,
+              background: '#FFD100',
+            }} />
           </div>
         </div>
 
         {/* ════════════════════════════════════
-          RIGHT — white login panel
-          ════════════════════════════════════ */}
+        RIGHT — white login panel
+        ════════════════════════════════════ */}
         <div style={{
           width: 480,
           minHeight: '100vh',
@@ -310,12 +322,20 @@ export default function LoginPage() {
           flexShrink: 0,
         }}>
 
-          {/* Logo */}
+          {/* ── VUT logo image (replaces VUTLogo SVG component) ── */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <VUTLogo size={52} />
+            <img
+                src="/images/vut-logo-gold-blue.svg"
+                alt="VUT logo"
+                style={{
+                  width: 64,
+                  height: 64,
+                  objectFit: 'contain',
+                }}
+            />
           </div>
 
-          {/* Brand heading — bold, centred, matching screenshot */}
+          {/* Brand heading */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <h1 style={{
               fontFamily: 'var(--font-display)',
@@ -363,19 +383,15 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                {/* ── New to platform divider + button ── */}
                 <div style={{ marginTop: 'auto', paddingTop: 32 }}>
-                  {/* dashed divider matching screenshot */}
                   <p style={{
                     textAlign: 'center',
                     fontSize: 13,
                     color: '#9baac4',
                     marginBottom: 14,
-                    position: 'relative',
                   }}>
                     -- New to the platform? --
                   </p>
-
                   <Link
                       to="/register"
                       style={{
@@ -401,7 +417,6 @@ export default function LoginPage() {
           ) : (
               /* ════ Step 2: login form ════ */
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
-                {/* Back */}
                 <button
                     type="button"
                     onClick={handleBack}
@@ -423,7 +438,6 @@ export default function LoginPage() {
                   ‹ Back
                 </button>
 
-                {/* Selected role header */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -453,14 +467,12 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Error */}
                 {error && (
                     <div className="alert alert-error">
                       <IconAlertCircle size={16} />{error}
                     </div>
                 )}
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div className="form-group">
                     <label className="form-label" htmlFor="instNum">
