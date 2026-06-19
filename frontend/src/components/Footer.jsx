@@ -92,7 +92,6 @@ export default function Footer() {
           {/* Bottom bar */}
           <div className="footer-bottom">
             <span>© {year} Mavuti Health Platform · Vaal University of Technology</span>
-            <span>Built with Spring Boot · React · Gemini AI</span>
           </div>
         </div>
       </footer>
