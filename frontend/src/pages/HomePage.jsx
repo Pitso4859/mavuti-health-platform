@@ -125,11 +125,23 @@ function CampusImageCard() {
             aspectRatio: '4/3',
             maxWidth: 540,
             width: '100%',
+            // Hard clip so the photo can never visually escape this
+            // rounded rectangle, even with odd intrinsic image sizes.
+            contain: 'paint',
+            isolation: 'isolate',
         }}>
             <img
                 src="/images/vut-building-exterior.svg"
                 alt="Vaal University of Technology campus building"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    display: 'block',
+                }}
             />
 
             {/* Dark overlay */}

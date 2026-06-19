@@ -1,5 +1,5 @@
 /* =========================================================
-   MAVUTI HEALTH PLATFORM v2 — Design System
+   MAVUTI HEALTH PLATFORM  — Design System
    VUT brand: Navy #0033a0 · Gold #FFD100 · White
    Typography: Sora (display) + Inter (body)
    ========================================================= */
@@ -449,8 +449,8 @@ button { cursor: pointer; font-family: inherit; }
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,209,0,0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 60% at 20% 80%, rgba(255,255,255,0.04) 0%, transparent 60%);
+          radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,209,0,0.08) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 60% at 20% 80%, rgba(255,255,255,0.04) 0%, transparent 60%);
 }
 .hero-content { position: relative; z-index: 1; max-width: 720px; }
 .hero-eyebrow {
@@ -935,8 +935,8 @@ button { cursor: pointer; font-family: inherit; }
 .vutela-bg {
   flex: 1;
   background:
-    linear-gradient(rgba(0,20,70,0.45), rgba(0,20,70,0.55)),
-    url('/images/vut_logo.png') center/cover no-repeat;
+          linear-gradient(rgba(0,20,70,0.45), rgba(0,20,70,0.55)),
+          url('/frontend/public/images/vut-logo-gold-blue.svg') center/cover no-repeat;
   background-color: var(--vut-navy-dark);
   min-height: 100vh;
   position: relative;
@@ -947,9 +947,9 @@ button { cursor: pointer; font-family: inherit; }
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg,
-    rgba(0,33,100,0.7) 0%,
-    rgba(0,10,50,0.4) 60%,
-    transparent 100%);
+  rgba(0,33,100,0.7) 0%,
+  rgba(0,10,50,0.4) 60%,
+  transparent 100%);
 }
 
 /* Right panel */
@@ -978,7 +978,7 @@ button { cursor: pointer; font-family: inherit; }
   object-fit: contain;
   /* The logo is white on black — invert on white background */
   filter: invert(1) brightness(0) saturate(100%)
-          invert(14%) sepia(80%) saturate(2000%) hue-rotate(210deg);
+  invert(14%) sepia(80%) saturate(2000%) hue-rotate(210deg);
 }
 
 /* Brand text */
@@ -1386,6 +1386,11 @@ button { cursor: pointer; font-family: inherit; }
   align-items: center;
   position: relative;
   z-index: 1;
+  width: 100%;
+}
+
+.hero-image-wrap > div {
+  width: 100%;
 }
 
 /* Pulsing dot animation for "Open now" badge */
@@ -1406,5 +1411,13 @@ button { cursor: pointer; font-family: inherit; }
   }
   .hero-image-wrap {
     order: -1; /* show image above text on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-image-wrap > div {
+    max-width: 100%;
+    border-radius: 16px;
+    aspect-ratio: 4/3;
   }
 }
