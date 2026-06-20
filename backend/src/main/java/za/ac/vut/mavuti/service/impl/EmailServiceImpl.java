@@ -1,11 +1,12 @@
 package za.ac.vut.mavuti.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import za.ac.vut.mavuti.entity.Appointment;
@@ -13,37 +14,36 @@ import za.ac.vut.mavuti.entity.User;
 import za.ac.vut.mavuti.service.EmailService;
 
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 /**
- * Sends transactional appointment emails via SMTP (configured through
- * {@code spring.mail.*} properties - see application.yml /
- * application-prod.yml).
- *
- * <p>Both methods are {@code @Async} (the app already has
- * {@code @EnableAsync} switched on - see
- * {@link za.ac.vut.mavuti.MavutiHealthPlatformApplication}) so a slow or
- * temporarily-down SMTP provider never delays the booking HTTP response:
- * the appointment is already committed to the database by the time the
- * email is attempted. A failure to send is logged, not thrown, for the
- * same reason - the user's booking must not appear to fail just because
- * the confirmation email didn't go out.</p>
+ * Sends transactional appointment emails via SMTP.
+ * JavaMailSender is injected as optional — if no mail config is present
+ * (e.g. on Render free tier without SMTP env vars), the app starts fine
+ * and emails are simply skipped and logged.
  */
 @Service
-@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailServiceImpl.class);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("h:mm a");
 
+    @Nullable
     private final JavaMailSender mailSender;
 
     @Value("${app.mail.from:Mavuti Health Clinic <no-reply@mavuti-health.onrender.com>}")
     private String fromAddress;
 
-    @Value("${app.mail.enabled:true}")
+    @Value("${app.mail.enabled:false}")
     private boolean mailEnabled;
+
+    @Autowired
+    public EmailServiceImpl(@Autowired(required = false) JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+        if (mailSender == null) {
+            log.info("No JavaMailSender configured — email notifications are disabled.");
+        }
+    }
 
     @Override
     @Async
@@ -95,8 +95,9 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void send(String to, String subject, String body) {
-        if (!mailEnabled) {
-            log.info("Mail disabled (app.mail.enabled=false) — skipped email to {}: {}", to, subject);
+        if (!mailEnabled || mailSender == null) {
+            log.info("Mail skipped (enabled={}, sender={}) — to={}, subject={}",
+                    mailEnabled, mailSender != null ? "present" : "absent", to, subject);
             return;
         }
         try {
@@ -107,8 +108,6 @@ public class EmailServiceImpl implements EmailService {
             message.setText(body);
             mailSender.send(message);
         } catch (Exception ex) {
-            // Never let an email failure look like a booking failure to the user -
-            // the appointment is already saved by the time this runs.
             log.warn("Failed to send email to {}: {}", to, ex.getMessage());
         }
     }
