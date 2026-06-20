@@ -16,28 +16,25 @@ import java.time.LocalTime;
 /**
  * A booked clinic appointment slot for a given user.
  *
- * <p><b>Double-booking prevention:</b> the combination of
- * {@code appointmentDate} + {@code appointmentTime} is enforced as unique
- * by the service layer (see
- * {@link za.ac.vut.mavuti.service.impl.AppointmentServiceImpl#book}) using
- * a database-level unique constraint as the final safety net. This is
- * deliberately enforced at the database (not just in application code)
- * because under concurrent load (the 50,000-user target), two requests for
- * the same slot could race past an application-level check between the
- * "is it free?" read and the "insert" write. The unique constraint turns
- * that race into a clean, catchable {@code DataIntegrityViolationException}
- * rather than a silent double booking.</p>
+ * <p><b>Capacity, not exclusivity:</b> each (date, time) slot can hold up
+ * to {@code AppointmentServiceImpl.SLOT_CAPACITY} (20) patients - it is no
+ * longer one-booking-per-slot. The capacity check happens in
+ * {@link za.ac.vut.mavuti.service.impl.AppointmentServiceImpl#book} by
+ * counting existing non-cancelled appointments for the slot inside the
+ * same transaction. There is deliberately no DB-level unique constraint
+ * on (date, time) anymore (multiple patients legitimately share a slot);
+ * the small remaining race window under concurrent load at exactly the
+ * 20th seat is an accepted trade-off for a clinic-scale system - a
+ * `SELECT ... FOR UPDATE` on a slot-counter row would close it completely
+ * if ever needed.</p>
  */
 @Entity
 @Table(
     name = "appointment",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_appointment_slot",
-        columnNames = {"appointment_date", "appointment_time"}
-    ),
     indexes = {
         @Index(name = "idx_appointment_user", columnList = "user_id"),
-        @Index(name = "idx_appointment_date", columnList = "appointment_date")
+        @Index(name = "idx_appointment_date", columnList = "appointment_date"),
+        @Index(name = "idx_appointment_date_time", columnList = "appointment_date, appointment_time")
     }
 )
 @Getter

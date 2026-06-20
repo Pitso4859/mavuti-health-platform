@@ -27,7 +27,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByUserIdOrderByAppointmentDateDescAppointmentTimeDesc(Long userId);
 
-    boolean existsByAppointmentDateAndAppointmentTime(LocalDate date, LocalTime time);
+    @Query("select count(a) from Appointment a " +
+           "where a.appointmentDate = :date and a.appointmentTime = :time and a.status <> 'CANCELLED'")
+    long countActiveBookingsForSlot(@Param("date") LocalDate date, @Param("time") LocalTime time);
+
+    @Query("select a.appointmentTime, count(a) from Appointment a " +
+           "where a.appointmentDate = :date and a.status <> 'CANCELLED' " +
+           "group by a.appointmentTime")
+    List<Object[]> countActiveBookingsByTimeForDate(@Param("date") LocalDate date);
 
     @Query("select a.appointmentTime from Appointment a " +
            "where a.appointmentDate = :date and a.status <> 'CANCELLED'")

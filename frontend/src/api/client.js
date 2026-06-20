@@ -6,7 +6,7 @@
 
 // Normalise whatever VITE_API_BASE_URL is set to:
 //   https://mavuti-api.onrender.com          → https://mavuti-api.onrender.com/api/v1
-//   https://mavuti-api.onrender.com/api/v1   → https://mavuti-api.onrender.com/api/v1  (no change)
+//      → https://mavuti-api.onrender.com/api/v1  (no change)
 //   https://mavuti-api.onrender.com/api/v1/  → https://mavuti-api.onrender.com/api/v1  (trailing slash stripped)
 //   (not set)                                → http://localhost:8080/api/v1
 function resolveBase(raw) {
@@ -54,6 +54,7 @@ async function request(path, { method = 'GET', body, auth = true, signal } = {})
       window.dispatchEvent(new Event('auth:expired'));
     }
     const message =
+        (data?.fieldErrors && Object.values(data.fieldErrors)[0]) ||
         data?.message ||
         data?.error ||
         (typeof data === 'string' ? data : `Request failed (${res.status})`);

@@ -24,6 +24,13 @@ export const appointmentsApi = {
   availability: (date)       => api.get(`/appointments/availability?date=${date}`),
   schedule:     (date)       => api.get(`/appointments/staff/schedule?date=${date}`),
   updateStatus: (id, status) => api.patch(`/appointments/staff/${id}/status`, { status }),
+
+  // Admin/staff slot blocking — used to make a slot unavailable (e.g. a
+  // 10:00-11:00 staff meeting) ahead of time.
+  blockSlot:      (payload)             => api.post('/appointments/staff/block', payload),
+  blockSlotRange: (payload)             => api.post('/appointments/staff/block-range', payload),
+  unblockSlot:    (blockedSlotId)       => api.delete(`/appointments/staff/block/${blockedSlotId}`),
+  listBlocked:    (date)                => api.get(`/appointments/staff/blocked?date=${date}`),
 };
 
 export const aiApi = {

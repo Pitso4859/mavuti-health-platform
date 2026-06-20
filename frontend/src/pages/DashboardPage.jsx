@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { appointmentsApi } from '../api/services';
 import {
   IconCalendar, IconClock, IconCheckCircle, IconAlertCircle,
-  IconTrash, IconRefreshCw, IconSparkles, IconUser, IconPhone,
+  IconTrash, IconRefreshCw, IconSparkles, IconUser, IconPhone, IconShield,
 } from '../components/Icons';
 
 const STATUS_BADGE = {
@@ -275,12 +275,170 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {isStaff && <ManageSlotsPanel />}
+
         {/* Emergency reminder */}
         <div style={{ marginTop: 'var(--s4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--gray-400)', fontSize: 'var(--text-xs)' }}>
           <IconPhone size={12} />
           Medical emergency? Call <strong style={{ color: 'var(--error)' }}>(016) 950-9111</strong> immediately · 24/7
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+const SLOT_TIMES = ['08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00'];
+
+function fmtSlotLabel(t) {
+  const [h, m] = t.split(':');
+  const hour = parseInt(h, 10);
+  return `${hour > 12 ? hour - 12 : hour}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+}
+
+function tomorrowIso() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+}
+
+/**
+ * Staff/admin-only panel for blocking appointment slots ahead of time —
+ * e.g. a 10:00-11:00 staff meeting makes the clinic unavailable for that
+ * hour. Visible only when `isStaff` (EMPLOYEE/ADMIN role).
+ */
+function ManageSlotsPanel() {
+  const [date, setDate]               = useState(tomorrowIso());
+  const [startTime, setStartTime]     = useState('10:00');
+  const [endTime, setEndTime]         = useState('11:00');
+  const [reason, setReason]           = useState('Staff meeting');
+  const [blocked, setBlocked]         = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState(null);
+  const [notice, setNotice]           = useState(null);
+
+  const load = (d) => {
+    setLoading(true);
+    appointmentsApi.listBlocked(d)
+        .then(setBlocked)
+        .catch(() => setBlocked([]))
+        .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(date); }, [date]);
+
+  const handleBlock = async (e) => {
+    e.preventDefault();
+    setError(null); setNotice(null);
+    if (endTime <= startTime) {
+      setError('End time must be after start time.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await appointmentsApi.blockSlotRange({
+        blockedDate: date,
+        startTime: `${startTime}:00`,
+        endTime: `${endTime}:00`,
+        reason,
+      });
+      setNotice(`Blocked ${fmtSlotLabel(startTime)}–${fmtSlotLabel(endTime)} on ${date}.`);
+      load(date);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUnblock = async (id) => {
+    try {
+      await appointmentsApi.unblockSlot(id);
+      load(date);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="card" style={{ marginTop: 'var(--s6)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--s4)' }}>
+        <IconShield size={18} style={{ color: 'var(--vut-navy)' }} />
+        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, margin: 0 }}>Manage Slots</h3>
+      </div>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)', marginBottom: 'var(--s5)' }}>
+        Block a time range (e.g. for a staff meeting) so students and employees can't book it.
+        Block slots at least a day ahead so patients aren't caught out by a last-minute change.
+      </p>
+
+      {error  && <div className="alert alert-error" style={{ marginBottom: 'var(--s4)' }}><IconAlertCircle size={16} /> {error}</div>}
+      {notice && <div className="alert alert-success" style={{ marginBottom: 'var(--s4)' }}><IconCheckCircle size={16} /> {notice}</div>}
+
+      <form onSubmit={handleBlock} style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--s4)' }}>
+        <div className="layout-2col layout-2col--even">
+          <div className="form-group">
+            <label className="form-label" htmlFor="block-date">Date</label>
+            <input id="block-date" type="date" className="form-input" value={date}
+                   min={tomorrowIso()} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="block-reason">Reason</label>
+            <input id="block-reason" type="text" className="form-input" value={reason}
+                   maxLength={200} onChange={e => setReason(e.target.value)} placeholder="e.g. Staff meeting" />
+          </div>
+        </div>
+        <div className="layout-2col layout-2col--even">
+          <div className="form-group">
+            <label className="form-label" htmlFor="block-start">From</label>
+            <select id="block-start" className="form-input" value={startTime} onChange={e => setStartTime(e.target.value)}>
+              {SLOT_TIMES.map(t => <option key={t} value={t}>{fmtSlotLabel(t)}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="block-end">Until</label>
+            <select id="block-end" className="form-input" value={endTime} onChange={e => setEndTime(e.target.value)}>
+              {[...SLOT_TIMES, '17:00'].map(t => <option key={t} value={t}>{fmtSlotLabel(t)}</option>)}
+            </select>
+          </div>
+        </div>
+        <button type="submit" className="btn btn-primary" disabled={saving} style={{ justifySelf: 'start' }}>
+          {saving ? 'Blocking…' : 'Block this time range'}
+        </button>
+      </form>
+
+      <div style={{ marginTop: 'var(--s6)' }}>
+        <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, marginBottom: 'var(--s3)' }}>
+          Blocked slots — {date}
+        </h4>
+        {loading ? (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-400)' }}>Loading…</p>
+        ) : blocked.length === 0 ? (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-400)' }}>No blocked slots for this date.</p>
+        ) : (
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+              {blocked.map(b => (
+                  <li key={b.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--gray-50)',
+                  }}>
+                    <span style={{ fontSize: 'var(--text-sm)' }}>
+                      <strong>{fmtSlotLabel(b.blockedTime.slice(0, 5))}</strong>
+                      {b.reason ? ` — ${b.reason}` : ''}
+                    </span>
+                    <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        title="Unblock this slot"
+                        onClick={() => handleUnblock(b.id)}
+                        style={{ color: 'var(--error)' }}
+                    >
+                      <IconTrash size={16} />
+                    </button>
+                  </li>
+              ))}
+            </ul>
+        )}
       </div>
     </div>
   );

@@ -57,5 +57,20 @@ public class DataSeeder implements CommandLineRunner {
                     .role(UserRole.EMPLOYEE)
                     .build());
         }
+
+        // Demo admin account - registration deliberately blocks self-signup
+        // as ADMIN (see AuthServiceImpl#parseRole), so this seeded row is
+        // the only way to reach the admin portal in dev/demo environments.
+        if (!userRepository.existsByInstitutionNumber("9000000001")) {
+            userRepository.save(User.builder()
+                    .firstName("Clinic")
+                    .lastName("Admin")
+                    .email("admin@vut.ac.za")
+                    .phone("0160000001")
+                    .institutionNumber("9000000001")
+                    .passwordHash(passwordEncoder.encode("Admin@123"))
+                    .role(UserRole.ADMIN)
+                    .build());
+        }
     }
 }

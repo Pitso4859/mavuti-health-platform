@@ -43,6 +43,16 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "https://mavuti-health.onrender.com"
 
+      # Appointment confirmation emails (SMTP). For Gmail: enable 2FA on
+      # the sending account and create an "App Password" — use that as
+      # MAIL_PASSWORD, NOT the normal account password.
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        value: "Mavuti Health Clinic <no-reply@mavuti-health.onrender.com>"
+
     healthCheckPath: /actuator/health
     autoDeploy: true
 
