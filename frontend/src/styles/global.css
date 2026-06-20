@@ -1,5 +1,5 @@
 /* =========================================================
-   MAVUTI HEALTH PLATFORM  — Design System
+   MAVUTI HEALTH PLATFORM v — Design System
    VUT brand: Navy #0033a0 · Gold #FFD100 · White
    Typography: Sora (display) + Inter (body)
    ========================================================= */
@@ -381,6 +381,9 @@ button { cursor: pointer; font-family: inherit; }
   text-decoration: none;
   transition: all var(--t-fast);
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .nav-link:hover { color: var(--vut-navy); background: var(--vut-navy-light); }
 .nav-link.active {
@@ -1419,5 +1422,27 @@ button { cursor: pointer; font-family: inherit; }
     max-width: 100%;
     border-radius: 16px;
     aspect-ratio: 4/3;
+  }
+}
+
+/* ── Responsive 2-column page layouts (booking, contact, admin) ── */
+.layout-2col {
+  display: grid;
+  gap: var(--s8);
+  align-items: start;
+}
+.layout-2col--main-wide  { grid-template-columns: 2fr 1fr; }
+.layout-2col--even       { grid-template-columns: 1fr 1fr; }
+.layout-2col--side-wide  { grid-template-columns: 1fr 1.6fr; }
+
+@media (max-width: 900px) {
+  .layout-2col--main-wide,
+  .layout-2col--side-wide {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .layout-2col--even {
+    grid-template-columns: 1fr;
   }
 }

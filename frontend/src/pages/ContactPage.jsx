@@ -46,7 +46,7 @@ export default function ContactPage() {
 
         <section className="section">
           <div className="container">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 'var(--s10)', alignItems: 'start' }}>
+            <div className="layout-2col layout-2col--side-wide">
 
               {/* Contact info sidebar */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s4)' }}>
@@ -117,7 +117,7 @@ export default function ContactPage() {
                 )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s5)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--s5)' }}>
+                  <div className="layout-2col layout-2col--even" style={{ gap: 'var(--s5)' }}>
                     <div className="form-group">
                       <label className="form-label" htmlFor="name">Full Name</label>
                       <input id="name" type="text" className="form-input"

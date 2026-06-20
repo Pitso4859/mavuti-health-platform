@@ -67,64 +67,64 @@ function UserModal({ user, onClose, onSave }) {
   };
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose}>
-      <div className="admin-modal" onClick={e => e.stopPropagation()}>
-        <div className="admin-modal-header">
-          <h3 className="admin-modal-title">{isEdit ? 'Edit User' : 'Add New User'}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}><IconX size={16} /></button>
-        </div>
-        <div className="admin-modal-body">
-          {err && <div className="alert alert-error"><IconAlertCircle size={14} />{err}</div>}
+      <div className="admin-modal-overlay" onClick={onClose}>
+        <div className="admin-modal" onClick={e => e.stopPropagation()}>
+          <div className="admin-modal-header">
+            <h3 className="admin-modal-title">{isEdit ? 'Edit User' : 'Add New User'}</h3>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}><IconX size={16} /></button>
+          </div>
+          <div className="admin-modal-body">
+            {err && <div className="alert alert-error"><IconAlertCircle size={14} />{err}</div>}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div className="form-group">
-              <label className="form-label">First Name *</label>
-              <input className="form-input" placeholder="Thabo" value={form.firstName} onChange={set('firstName')} />
+            <div className="layout-2col layout-2col--even" style={{ gap: 12 }}>
+              <div className="form-group">
+                <label className="form-label">First Name *</label>
+                <input className="form-input" placeholder="Thabo" value={form.firstName} onChange={set('firstName')} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Last Name *</label>
+                <input className="form-input" placeholder="Dlamini" value={form.lastName} onChange={set('lastName')} />
+              </div>
             </div>
+
             <div className="form-group">
-              <label className="form-label">Last Name *</label>
-              <input className="form-input" placeholder="Dlamini" value={form.lastName} onChange={set('lastName')} />
+              <label className="form-label">Email Address *</label>
+              <input className="form-input" type="email" placeholder="thabo@vut.ac.za" value={form.email} onChange={set('email')} />
+            </div>
+
+            <div className="layout-2col layout-2col--even" style={{ gap: 12 }}>
+              <div className="form-group">
+                <label className="form-label">Institution Number *</label>
+                <input className="form-input" placeholder="221386653" value={form.institutionNumber} onChange={set('institutionNumber')} inputMode="numeric" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input className="form-input" placeholder="+27 72 000 0000" value={form.phone || ''} onChange={set('phone')} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Role *</label>
+              <select className="form-select" value={form.role} onChange={set('role')}>
+                <option value="STUDENT">Student</option>
+                <option value="EMPLOYEE">Staff / Employee</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">{isEdit ? 'New Password (leave blank to keep current)' : 'Password *'}</label>
+              <input className="form-input" type="password" placeholder="Min. 8 characters" value={form.password} onChange={set('password')} autoComplete="new-password" />
             </div>
           </div>
-
-          <div className="form-group">
-            <label className="form-label">Email Address *</label>
-            <input className="form-input" type="email" placeholder="thabo@vut.ac.za" value={form.email} onChange={set('email')} />
+          <div className="admin-modal-footer">
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+              {saving ? <><span className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : (isEdit ? 'Save Changes' : 'Add User')}
+            </button>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div className="form-group">
-              <label className="form-label">Institution Number *</label>
-              <input className="form-input" placeholder="221386653" value={form.institutionNumber} onChange={set('institutionNumber')} inputMode="numeric" />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Phone</label>
-              <input className="form-input" placeholder="+27 72 000 0000" value={form.phone || ''} onChange={set('phone')} />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Role *</label>
-            <select className="form-select" value={form.role} onChange={set('role')}>
-              <option value="STUDENT">Student</option>
-              <option value="EMPLOYEE">Staff / Employee</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">{isEdit ? 'New Password (leave blank to keep current)' : 'Password *'}</label>
-            <input className="form-input" type="password" placeholder="Min. 8 characters" value={form.password} onChange={set('password')} autoComplete="new-password" />
-          </div>
-        </div>
-        <div className="admin-modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? <><span className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : (isEdit ? 'Save Changes' : 'Add User')}
-          </button>
         </div>
       </div>
-    </div>
   );
 }
 
@@ -148,56 +148,56 @@ function ApptModal({ appt, onClose, onStatusChange }) {
   };
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose}>
-      <div className="admin-modal" onClick={e => e.stopPropagation()}>
-        <div className="admin-modal-header">
-          <h3 className="admin-modal-title">Appointment Details</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}><IconX size={16} /></button>
-        </div>
-        <div className="admin-modal-body">
-          {err && <div className="alert alert-error"><IconAlertCircle size={14} />{err}</div>}
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {[
-              ['Patient', `${appt.patientFirstName || ''} ${appt.patientLastName || ''}`.trim() || appt.patientInstitutionNumber || '—'],
-              ['Institution No.', appt.patientInstitutionNumber || '—'],
-              ['Service', (appt.serviceType || '').replace(/_/g, ' ')],
-              ['Date', fmtDate(appt.appointmentDate)],
-              ['Time', fmtTime(appt.appointmentTime)],
-              ['Booked on', fmtDate(appt.createdAt)],
-            ].map(([label, value]) => (
-              <div key={label} style={{ padding: 12, background: 'var(--gray-50)', borderRadius: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--gray-800)' }}>{value}</div>
-              </div>
-            ))}
+      <div className="admin-modal-overlay" onClick={onClose}>
+        <div className="admin-modal" onClick={e => e.stopPropagation()}>
+          <div className="admin-modal-header">
+            <h3 className="admin-modal-title">Appointment Details</h3>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}><IconX size={16} /></button>
           </div>
+          <div className="admin-modal-body">
+            {err && <div className="alert alert-error"><IconAlertCircle size={14} />{err}</div>}
 
-          {appt.reason && (
-            <div style={{ padding: 12, background: 'var(--vut-navy-light)', borderRadius: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--vut-navy)', marginBottom: 4 }}>REASON</div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-700)' }}>{appt.reason}</div>
+            <div className="layout-2col layout-2col--even" style={{ gap: 12 }}>
+              {[
+                ['Patient', `${appt.patientFirstName || ''} ${appt.patientLastName || ''}`.trim() || appt.patientInstitutionNumber || '—'],
+                ['Institution No.', appt.patientInstitutionNumber || '—'],
+                ['Service', (appt.serviceType || '').replace(/_/g, ' ')],
+                ['Date', fmtDate(appt.appointmentDate)],
+                ['Time', fmtTime(appt.appointmentTime)],
+                ['Booked on', fmtDate(appt.createdAt)],
+              ].map(([label, value]) => (
+                  <div key={label} style={{ padding: 12, background: 'var(--gray-50)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--gray-800)' }}>{value}</div>
+                  </div>
+              ))}
             </div>
-          )}
 
-          <div className="form-group">
-            <label className="form-label">Update Status</label>
-            <select className="form-select" value={status} onChange={e => setStatus(e.target.value)}>
-              <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed / Approved</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+            {appt.reason && (
+                <div style={{ padding: 12, background: 'var(--vut-navy-light)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--vut-navy)', marginBottom: 4 }}>REASON</div>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-700)' }}>{appt.reason}</div>
+                </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Update Status</label>
+              <select className="form-select" value={status} onChange={e => setStatus(e.target.value)}>
+                <option value="PENDING">Pending</option>
+                <option value="CONFIRMED">Confirmed / Approved</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
           </div>
-        </div>
-        <div className="admin-modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>Close</button>
-          <button className="btn btn-primary" onClick={handleUpdate} disabled={saving}>
-            {saving ? <><span className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : 'Update Status'}
-          </button>
+          <div className="admin-modal-footer">
+            <button className="btn btn-ghost" onClick={onClose}>Close</button>
+            <button className="btn btn-primary" onClick={handleUpdate} disabled={saving}>
+              {saving ? <><span className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : 'Update Status'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
@@ -218,15 +218,15 @@ function StatsTab({ stats, loading }) {
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--s4)' }}>
-      {cards.map(c => (
-        <div key={c.label} className="admin-stat-card" style={{ borderTop: `4px solid ${c.color}` }}>
-          <div className="admin-stat-label">{c.label}</div>
-          <div className="admin-stat-value" style={{ color: c.color }}>{c.value}</div>
-          <div className="admin-stat-sub">{c.sub}</div>
-        </div>
-      ))}
-    </div>
+      <div className="admin-stats-grid" style={{ gap: 'var(--s4)' }}>
+        {cards.map(c => (
+            <div key={c.label} className="admin-stat-card" style={{ borderTop: `4px solid ${c.color}` }}>
+              <div className="admin-stat-label">{c.label}</div>
+              <div className="admin-stat-value" style={{ color: c.color }}>{c.value}</div>
+              <div className="admin-stat-sub">{c.sub}</div>
+            </div>
+        ))}
+      </div>
   );
 }
 
@@ -240,10 +240,10 @@ function UsersTab({ users, loading, onRefresh }) {
   const filtered = users.filter(u => {
     const q = search.toLowerCase();
     const matchesSearch = !q ||
-      u.firstName?.toLowerCase().includes(q) ||
-      u.lastName?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.institutionNumber?.includes(q);
+        u.firstName?.toLowerCase().includes(q) ||
+        u.lastName?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.institutionNumber?.includes(q);
     const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -268,93 +268,93 @@ function UsersTab({ users, loading, onRefresh }) {
   };
 
   return (
-    <div>
-      <div className="admin-toolbar">
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
-          <input
-            className="admin-search"
-            placeholder="Search by name, email or number…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          {['ALL','STUDENT','EMPLOYEE','ADMIN'].map(r => (
-            <button
-              key={r}
-              className={`btn btn-sm ${roleFilter === r ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setRole(r)}
-              style={{ padding: '6px 12px', fontSize: 12 }}
-            >
-              {r === 'ALL' ? 'All' : r.charAt(0) + r.slice(1).toLowerCase()}
-            </button>
-          ))}
-        </div>
-        <button className="btn btn-primary btn-sm" onClick={() => setModal('add')}>
-          <IconUser size={14} /> Add User
-        </button>
-      </div>
-
-      {loading
-        ? <div className="loading-state"><div className="spinner" />Loading users…</div>
-        : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Institution No.</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Role</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 && (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--gray-400)' }}>No users found</td></tr>
-                )}
-                {filtered.map(u => {
-                  const rb = ROLE_BADGE[u.role] || ROLE_BADGE.STUDENT;
-                  return (
-                    <tr key={u.id}>
-                      <td>
-                        <div style={{ fontWeight: 600, color: 'var(--gray-800)' }}>
-                          {u.firstName} {u.lastName}
-                        </div>
-                      </td>
-                      <td><code style={{ fontSize: 12, background: 'var(--gray-100)', padding: '2px 6px', borderRadius: 4 }}>{u.institutionNumber}</code></td>
-                      <td style={{ color: 'var(--gray-500)', fontSize: 13 }}>{u.email}</td>
-                      <td style={{ color: 'var(--gray-500)', fontSize: 13 }}>{u.phone || '—'}</td>
-                      <td><span className={`badge ${rb.cls}`}>{rb.label}</span></td>
-                      <td>
-                        <div className="admin-actions">
-                          <button className="admin-btn admin-btn-edit" onClick={() => setModal(u)}>Edit</button>
-                          <button
-                            className="admin-btn admin-btn-delete"
-                            onClick={() => handleDelete(u.id, `${u.firstName} ${u.lastName}`)}
-                            disabled={deleting === u.id}
-                          >
-                            {deleting === u.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <IconTrash size={12} />}
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+      <div>
+        <div className="admin-toolbar">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+            <input
+                className="admin-search"
+                placeholder="Search by name, email or number…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+            />
+            {['ALL','STUDENT','EMPLOYEE','ADMIN'].map(r => (
+                <button
+                    key={r}
+                    className={`btn btn-sm ${roleFilter === r ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => setRole(r)}
+                    style={{ padding: '6px 12px', fontSize: 12 }}
+                >
+                  {r === 'ALL' ? 'All' : r.charAt(0) + r.slice(1).toLowerCase()}
+                </button>
+            ))}
           </div>
-        )
-      }
+          <button className="btn btn-primary btn-sm" onClick={() => setModal('add')}>
+            <IconUser size={14} /> Add User
+          </button>
+        </div>
 
-      {modal && (
-        <UserModal
-          user={modal === 'add' ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={handleSave}
-        />
-      )}
-    </div>
+        {loading
+            ? <div className="loading-state"><div className="spinner" />Loading users…</div>
+            : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Institution No.</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Role</th>
+                      <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filtered.length === 0 && (
+                        <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--gray-400)' }}>No users found</td></tr>
+                    )}
+                    {filtered.map(u => {
+                      const rb = ROLE_BADGE[u.role] || ROLE_BADGE.STUDENT;
+                      return (
+                          <tr key={u.id}>
+                            <td>
+                              <div style={{ fontWeight: 600, color: 'var(--gray-800)' }}>
+                                {u.firstName} {u.lastName}
+                              </div>
+                            </td>
+                            <td><code style={{ fontSize: 12, background: 'var(--gray-100)', padding: '2px 6px', borderRadius: 4 }}>{u.institutionNumber}</code></td>
+                            <td style={{ color: 'var(--gray-500)', fontSize: 13 }}>{u.email}</td>
+                            <td style={{ color: 'var(--gray-500)', fontSize: 13 }}>{u.phone || '—'}</td>
+                            <td><span className={`badge ${rb.cls}`}>{rb.label}</span></td>
+                            <td>
+                              <div className="admin-actions">
+                                <button className="admin-btn admin-btn-edit" onClick={() => setModal(u)}>Edit</button>
+                                <button
+                                    className="admin-btn admin-btn-delete"
+                                    onClick={() => handleDelete(u.id, `${u.firstName} ${u.lastName}`)}
+                                    disabled={deleting === u.id}
+                                >
+                                  {deleting === u.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <IconTrash size={12} />}
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+            )
+        }
+
+        {modal && (
+            <UserModal
+                user={modal === 'add' ? null : modal}
+                onClose={() => setModal(null)}
+                onSave={handleSave}
+            />
+        )}
+      </div>
   );
 }
 
@@ -368,10 +368,10 @@ function AppointmentsTab({ appointments, loading, onRefresh }) {
   const filtered = appointments.filter(a => {
     const q = search.toLowerCase();
     const matchesSearch = !q ||
-      a.patientFirstName?.toLowerCase().includes(q) ||
-      a.patientLastName?.toLowerCase().includes(q) ||
-      a.patientInstitutionNumber?.includes(q) ||
-      a.serviceType?.toLowerCase().includes(q);
+        a.patientFirstName?.toLowerCase().includes(q) ||
+        a.patientLastName?.toLowerCase().includes(q) ||
+        a.patientInstitutionNumber?.includes(q) ||
+        a.serviceType?.toLowerCase().includes(q);
     const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -398,108 +398,108 @@ function AppointmentsTab({ appointments, loading, onRefresh }) {
   };
 
   return (
-    <div>
-      <div className="admin-toolbar">
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
-          <input
-            className="admin-search"
-            placeholder="Search by patient name, number or service…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          {['ALL','PENDING','CONFIRMED','COMPLETED','CANCELLED'].map(s => (
-            <button
-              key={s}
-              className={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setSF(s)}
-              style={{ padding: '6px 12px', fontSize: 12 }}
-            >
-              {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
-              {s === 'PENDING' && appointments.filter(a => a.status === 'PENDING').length > 0 && (
-                <span style={{ marginLeft: 4, background: 'var(--warning)', color: 'white', borderRadius: '50%', width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>
+      <div>
+        <div className="admin-toolbar">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+            <input
+                className="admin-search"
+                placeholder="Search by patient name, number or service…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+            />
+            {['ALL','PENDING','CONFIRMED','COMPLETED','CANCELLED'].map(s => (
+                <button
+                    key={s}
+                    className={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => setSF(s)}
+                    style={{ padding: '6px 12px', fontSize: 12 }}
+                >
+                  {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
+                  {s === 'PENDING' && appointments.filter(a => a.status === 'PENDING').length > 0 && (
+                      <span style={{ marginLeft: 4, background: 'var(--warning)', color: 'white', borderRadius: '50%', width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>
                   {appointments.filter(a => a.status === 'PENDING').length}
                 </span>
-              )}
-            </button>
-          ))}
-        </div>
-        <button className="btn btn-ghost btn-sm" onClick={onRefresh}><IconRefreshCw size={14} /> Refresh</button>
-      </div>
-
-      {loading
-        ? <div className="loading-state"><div className="spinner" />Loading appointments…</div>
-        : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Institution No.</th>
-                  <th>Service</th>
-                  <th>Date & Time</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 && (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--gray-400)' }}>No appointments found</td></tr>
-                )}
-                {filtered.map(a => {
-                  const sb = STATUS_BADGE[a.status] || STATUS_BADGE.PENDING;
-                  return (
-                    <tr key={a.id}>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>
-                          {a.patientFirstName ? `${a.patientFirstName} ${a.patientLastName}` : 'Unknown'}
-                        </div>
-                      </td>
-                      <td><code style={{ fontSize: 12, background: 'var(--gray-100)', padding: '2px 6px', borderRadius: 4 }}>{a.patientInstitutionNumber || '—'}</code></td>
-                      <td style={{ fontSize: 13 }}>{(a.serviceType || '').replace(/_/g, ' ')}</td>
-                      <td style={{ fontSize: 13 }}>
-                        <div>{fmtDate(a.appointmentDate)}</div>
-                        <div style={{ color: 'var(--gray-400)', fontSize: 11 }}>{fmtTime(a.appointmentTime)}</div>
-                      </td>
-                      <td><span className={`badge ${sb.cls}`}>{sb.label}</span></td>
-                      <td>
-                        <div className="admin-actions">
-                          <button className="admin-btn admin-btn-edit" onClick={() => setSelected(a)}>View</button>
-                          {a.status === 'PENDING' && (
-                            <>
-                              <button className="admin-btn admin-btn-approve" onClick={() => quickAction(a.id, 'approve')}>
-                                <IconCheckCircle size={11} /> Approve
-                              </button>
-                              <button className="admin-btn admin-btn-reject" onClick={() => quickAction(a.id, 'reject')}>
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          <button
-                            className="admin-btn admin-btn-delete"
-                            onClick={() => handleDelete(a.id)}
-                            disabled={deleting === a.id}
-                          >
-                            {deleting === a.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <IconTrash size={12} />}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  )}
+                </button>
+            ))}
           </div>
-        )
-      }
+          <button className="btn btn-ghost btn-sm" onClick={onRefresh}><IconRefreshCw size={14} /> Refresh</button>
+        </div>
 
-      {selected && (
-        <ApptModal
-          appt={selected}
-          onClose={() => setSelected(null)}
-          onStatusChange={handleStatusChange}
-        />
-      )}
-    </div>
+        {loading
+            ? <div className="loading-state"><div className="spinner" />Loading appointments…</div>
+            : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                    <tr>
+                      <th>Patient</th>
+                      <th>Institution No.</th>
+                      <th>Service</th>
+                      <th>Date & Time</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filtered.length === 0 && (
+                        <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--gray-400)' }}>No appointments found</td></tr>
+                    )}
+                    {filtered.map(a => {
+                      const sb = STATUS_BADGE[a.status] || STATUS_BADGE.PENDING;
+                      return (
+                          <tr key={a.id}>
+                            <td>
+                              <div style={{ fontWeight: 600 }}>
+                                {a.patientFirstName ? `${a.patientFirstName} ${a.patientLastName}` : 'Unknown'}
+                              </div>
+                            </td>
+                            <td><code style={{ fontSize: 12, background: 'var(--gray-100)', padding: '2px 6px', borderRadius: 4 }}>{a.patientInstitutionNumber || '—'}</code></td>
+                            <td style={{ fontSize: 13 }}>{(a.serviceType || '').replace(/_/g, ' ')}</td>
+                            <td style={{ fontSize: 13 }}>
+                              <div>{fmtDate(a.appointmentDate)}</div>
+                              <div style={{ color: 'var(--gray-400)', fontSize: 11 }}>{fmtTime(a.appointmentTime)}</div>
+                            </td>
+                            <td><span className={`badge ${sb.cls}`}>{sb.label}</span></td>
+                            <td>
+                              <div className="admin-actions">
+                                <button className="admin-btn admin-btn-edit" onClick={() => setSelected(a)}>View</button>
+                                {a.status === 'PENDING' && (
+                                    <>
+                                      <button className="admin-btn admin-btn-approve" onClick={() => quickAction(a.id, 'approve')}>
+                                        <IconCheckCircle size={11} /> Approve
+                                      </button>
+                                      <button className="admin-btn admin-btn-reject" onClick={() => quickAction(a.id, 'reject')}>
+                                        Reject
+                                      </button>
+                                    </>
+                                )}
+                                <button
+                                    className="admin-btn admin-btn-delete"
+                                    onClick={() => handleDelete(a.id)}
+                                    disabled={deleting === a.id}
+                                >
+                                  {deleting === a.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <IconTrash size={12} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+            )
+        }
+
+        {selected && (
+            <ApptModal
+                appt={selected}
+                onClose={() => setSelected(null)}
+                onStatusChange={handleStatusChange}
+            />
+        )}
+      </div>
   );
 }
 
@@ -549,120 +549,120 @@ export default function AdminPage() {
   const pendingCount = appointments.filter(a => a.status === 'PENDING').length;
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-header">
-          <div className="admin-sidebar-title">Admin Portal</div>
-          <div className="admin-sidebar-sub">Mavuti Health Clinic</div>
-        </div>
+      <div className="admin-layout">
+        {/* Sidebar */}
+        <aside className="admin-sidebar">
+          <div className="admin-sidebar-header">
+            <div className="admin-sidebar-title">Admin Portal</div>
+            <div className="admin-sidebar-sub">Mavuti Health Clinic</div>
+          </div>
 
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            className={`admin-nav-item ${activeTab === id ? 'active' : ''}`}
-            onClick={() => setTab(id)}
-          >
-            <Icon size={16} />
-            {label}
-            {id === 'appointments' && pendingCount > 0 && (
-              <span style={{ marginLeft: 'auto', background: 'var(--warning)', color: 'white', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
+          {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                  key={id}
+                  className={`admin-nav-item ${activeTab === id ? 'active' : ''}`}
+                  onClick={() => setTab(id)}
+              >
+                <Icon size={16} />
+                {label}
+                {id === 'appointments' && pendingCount > 0 && (
+                    <span style={{ marginLeft: 'auto', background: 'var(--warning)', color: 'white', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
                 {pendingCount}
               </span>
-            )}
-          </button>
-        ))}
+                )}
+              </button>
+          ))}
 
-        {/* Emergency at bottom of sidebar */}
-        <div style={{ marginTop: 'auto', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
-            <IconPhone size={11} /> Emergency
+          {/* Emergency at bottom of sidebar */}
+          <div style={{ marginTop: 'auto', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+              <IconPhone size={11} /> Emergency
+            </div>
+            <div style={{ color: 'var(--vut-gold)', fontWeight: 700, fontSize: 14 }}>(016) 950-9111</div>
           </div>
-          <div style={{ color: 'var(--vut-gold)', fontWeight: 700, fontSize: 14 }}>(016) 950-9111</div>
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main content */}
-      <main className="admin-content">
-        <div className="admin-content-inner">
+        {/* Main content */}
+        <main className="admin-content">
+          <div className="admin-content-inner">
 
-          {activeTab === 'overview' && (
-            <>
-              <h1 className="admin-page-title">Overview</h1>
-              <p className="admin-page-sub">
-                Welcome back, {user.firstName}. Here's a summary of the clinic platform.
-              </p>
+            {activeTab === 'overview' && (
+                <>
+                  <h1 className="admin-page-title">Overview</h1>
+                  <p className="admin-page-sub">
+                    Welcome back, {user.firstName}. Here's a summary of the clinic platform.
+                  </p>
 
-              <StatsTab stats={stats} loading={loadingStats} />
+                  <StatsTab stats={stats} loading={loadingStats} />
 
-              {/* Quick action: pending appointments */}
-              {pendingCount > 0 && (
-                <div style={{ marginTop: 24, padding: 20, background: 'var(--warning-bg)', border: '1px solid #fde047', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: 'var(--warning)', fontSize: 'var(--text-sm)' }}>
-                      ⏳ {pendingCount} appointment{pendingCount > 1 ? 's' : ''} waiting for approval
+                  {/* Quick action: pending appointments */}
+                  {pendingCount > 0 && (
+                      <div style={{ marginTop: 24, padding: 20, background: 'var(--warning-bg)', border: '1px solid #fde047', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, color: 'var(--warning)', fontSize: 'var(--text-sm)' }}>
+                            ⏳ {pendingCount} appointment{pendingCount > 1 ? 's' : ''} waiting for approval
+                          </div>
+                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)', marginTop: 4 }}>
+                            Review and approve or reject pending bookings
+                          </div>
+                        </div>
+                        <button className="btn btn-primary btn-sm" onClick={() => setTab('appointments')}>
+                          <IconCalendar size={14} /> Review Now
+                        </button>
+                      </div>
+                  )}
+
+                  {/* Recent appointments preview */}
+                  <div style={{ marginTop: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>Recent Appointments</h2>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setTab('appointments')}>View all →</button>
                     </div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)', marginTop: 4 }}>
-                      Review and approve or reject pending bookings
+                    <div className="admin-table-wrap">
+                      <table className="admin-table">
+                        <thead>
+                        <tr><th>Patient</th><th>Service</th><th>Date</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                        {appointments.slice(0, 8).map(a => {
+                          const sb = STATUS_BADGE[a.status] || STATUS_BADGE.PENDING;
+                          return (
+                              <tr key={a.id}>
+                                <td style={{ fontWeight: 600 }}>{a.patientFirstName ? `${a.patientFirstName} ${a.patientLastName}` : a.patientInstitutionNumber || '—'}</td>
+                                <td style={{ fontSize: 13 }}>{(a.serviceType || '').replace(/_/g, ' ')}</td>
+                                <td style={{ fontSize: 13 }}>{fmtDate(a.appointmentDate)}</td>
+                                <td><span className={`badge ${sb.cls}`}>{sb.label}</span></td>
+                              </tr>
+                          );
+                        })}
+                        {appointments.length === 0 && !loadingAppts && (
+                            <tr><td colSpan={4} style={{ textAlign: 'center', padding: 32, color: 'var(--gray-400)' }}>No appointments yet</td></tr>
+                        )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  <button className="btn btn-primary btn-sm" onClick={() => setTab('appointments')}>
-                    <IconCalendar size={14} /> Review Now
-                  </button>
-                </div>
-              )}
+                </>
+            )}
 
-              {/* Recent appointments preview */}
-              <div style={{ marginTop: 24 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>Recent Appointments</h2>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setTab('appointments')}>View all →</button>
-                </div>
-                <div className="admin-table-wrap">
-                  <table className="admin-table">
-                    <thead>
-                      <tr><th>Patient</th><th>Service</th><th>Date</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>
-                      {appointments.slice(0, 8).map(a => {
-                        const sb = STATUS_BADGE[a.status] || STATUS_BADGE.PENDING;
-                        return (
-                          <tr key={a.id}>
-                            <td style={{ fontWeight: 600 }}>{a.patientFirstName ? `${a.patientFirstName} ${a.patientLastName}` : a.patientInstitutionNumber || '—'}</td>
-                            <td style={{ fontSize: 13 }}>{(a.serviceType || '').replace(/_/g, ' ')}</td>
-                            <td style={{ fontSize: 13 }}>{fmtDate(a.appointmentDate)}</td>
-                            <td><span className={`badge ${sb.cls}`}>{sb.label}</span></td>
-                          </tr>
-                        );
-                      })}
-                      {appointments.length === 0 && !loadingAppts && (
-                        <tr><td colSpan={4} style={{ textAlign: 'center', padding: 32, color: 'var(--gray-400)' }}>No appointments yet</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
+            {activeTab === 'appointments' && (
+                <>
+                  <h1 className="admin-page-title">Appointments</h1>
+                  <p className="admin-page-sub">Approve, reject, update or remove clinic bookings.</p>
+                  <AppointmentsTab appointments={appointments} loading={loadingAppts} onRefresh={loadAll} />
+                </>
+            )}
 
-          {activeTab === 'appointments' && (
-            <>
-              <h1 className="admin-page-title">Appointments</h1>
-              <p className="admin-page-sub">Approve, reject, update or remove clinic bookings.</p>
-              <AppointmentsTab appointments={appointments} loading={loadingAppts} onRefresh={loadAll} />
-            </>
-          )}
+            {activeTab === 'users' && (
+                <>
+                  <h1 className="admin-page-title">Users</h1>
+                  <p className="admin-page-sub">Add students or staff who haven't registered yet, edit profiles, or remove accounts.</p>
+                  <UsersTab users={users} loading={loadingUsers} onRefresh={loadAll} />
+                </>
+            )}
 
-          {activeTab === 'users' && (
-            <>
-              <h1 className="admin-page-title">Users</h1>
-              <p className="admin-page-sub">Add students or staff who haven't registered yet, edit profiles, or remove accounts.</p>
-              <UsersTab users={users} loading={loadingUsers} onRefresh={loadAll} />
-            </>
-          )}
-
-        </div>
-      </main>
-    </div>
+          </div>
+        </main>
+      </div>
   );
 }
