@@ -1,7 +1,9 @@
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
   datasource:
-    # Build JDBC URL from individual Render env vars (avoids the "claims to
-    # not accept jdbcUrl" error caused by embedded credentials in DATABASE_URL)
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
@@ -15,7 +17,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 
   ai:
     openai:
@@ -26,6 +28,23 @@ spring:
           model: gemini-1.5-flash
           temperature: 0.3
           max-tokens: 1024
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:Mavuti Health Clinic <no-reply@mavuti-health.onrender.com>}
 
 logging:
   level:
