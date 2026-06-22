@@ -441,7 +441,9 @@ button { cursor: pointer; font-family: inherit; }
 
 /* ── Hero ─────────────────────────────────────────────────── */
 .hero {
-  background: linear-gradient(135deg, var(--vut-navy) 0%, var(--vut-navy-dark) 60%, #001040 100%);
+  background:
+    linear-gradient(135deg, rgba(0,20,80,0.82) 0%, rgba(0,10,50,0.75) 60%, rgba(0,5,30,0.88) 100%),
+    url('/images/vut-building-exterior.svg') center/cover no-repeat;
   color: var(--white);
   padding: var(--s24) 0;
   position: relative;
@@ -452,10 +454,10 @@ button { cursor: pointer; font-family: inherit; }
   position: absolute;
   inset: 0;
   background:
-          radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,209,0,0.08) 0%, transparent 70%),
-          radial-gradient(ellipse 40% 60% at 20% 80%, rgba(255,255,255,0.04) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 90% at 50% 100%, rgba(255,209,0,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 60%);
 }
-.hero-content { position: relative; z-index: 1; max-width: 720px; }
+.hero-content { position: relative; z-index: 1; max-width: 860px; width: 100%; }
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -1374,13 +1376,14 @@ button { cursor: pointer; font-family: inherit; }
   .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ── Hero two-column layout ───────────────────────────────── */
+/* ── Hero centred layout (full-width background image) ────── */
 .hero-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s12);
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   min-height: 520px;
+  justify-content: center;
 }
 
 .hero-image-wrap {

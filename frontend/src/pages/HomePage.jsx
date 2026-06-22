@@ -412,7 +412,7 @@ export default function HomePage() {
                                 to mental health support, all in one place.
                             </p>
 
-                            <div className="hero-actions">
+                            <div className="hero-actions" style={{ justifyContent: 'center' }}>
                                 <Link to="/appointment" className="btn btn-gold btn-lg">
                                     <IconCalendar size={18} />
                                     Book Appointment
@@ -423,7 +423,7 @@ export default function HomePage() {
                                 </Link>
                             </div>
 
-                            <div className="hero-stats">
+                            <div className="hero-stats" style={{ justifyContent: 'center' }}>
                                 <div>
                                     <div className="hero-stat-value">50K+</div>
                                     <div className="hero-stat-label">Community served</div>
@@ -439,10 +439,7 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        {/* Right — VUT campus image */}
-                        <div className="hero-image-wrap">
-                            <CampusImageCard />
-                        </div>
+
                     </div>
                 </div>
             </section>
