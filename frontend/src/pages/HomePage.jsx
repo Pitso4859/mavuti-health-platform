@@ -131,7 +131,7 @@ function CampusImageCard() {
             isolation: 'isolate',
         }}>
             <img
-                src="/images/vut_building.svg"
+                src="/images/vut-building-exterior.svg"
                 alt="Vaal University of Technology campus building"
                 style={{
                     position: 'absolute',
