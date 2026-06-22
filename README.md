@@ -1,4 +1,4 @@
-# Mavuti Health Platform 
+# Mavuti clinic Health Platform 
 
 > **VUT Health Clinic · Full-Stack · Spring Boot + React + Gemini AI**
 
