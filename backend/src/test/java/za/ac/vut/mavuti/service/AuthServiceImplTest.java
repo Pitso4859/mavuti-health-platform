@@ -35,6 +35,8 @@ import static org.mockito.Mockito.*;
  *   <li>Login with unknown institution number → {@link InvalidCredentialsException}</li>
  *   <li>Login with wrong password → same {@link InvalidCredentialsException}
  *       (same message, by design — prevents institution-number enumeration)</li>
+ *   <li>Login with mismatched role → {@link InvalidCredentialsException}
+ *       (student number cannot log in via Admin or Employee portal)</li>
  *   <li>ADMIN role rejected on public self-registration</li>
  * </ul>
  */
@@ -141,7 +143,8 @@ class AuthServiceImplTest {
         when(passwordEncoder.matches("Student@123", "$2a$12$hashedpw")).thenReturn(true);
         when(jwtService.generateToken("221386653", "STUDENT", 1L)).thenReturn("jwt.token.here");
 
-        AuthResponse resp = authService.login(new LoginRequest("221386653", "Student@123"));
+        AuthResponse resp = authService.login(
+                new LoginRequest("221386653", "Student@123", "STUDENT"));
 
         assertThat(resp.token()).isEqualTo("jwt.token.here");
         assertThat(resp.institutionNumber()).isEqualTo("221386653");
@@ -151,9 +154,10 @@ class AuthServiceImplTest {
     void login_unknownInstitutionNumber_throwsInvalidCredentials() {
         when(userRepository.findByInstitutionNumber("999999999")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("999999999", "anyPassword")))
+        assertThatThrownBy(() -> authService.login(
+                new LoginRequest("999999999", "anyPassword", "STUDENT")))
                 .isInstanceOf(InvalidCredentialsException.class)
-                .hasMessageContaining("Invalid institution number or password");
+                .hasMessage("Invalid credentials.");
     }
 
     @Test
@@ -162,13 +166,40 @@ class AuthServiceImplTest {
                 .thenReturn(Optional.of(savedStudent));
         when(passwordEncoder.matches("WrongPass!", "$2a$12$hashedpw")).thenReturn(false);
 
-        InvalidCredentialsException byWrongPw = catchThrowableOfType(
-                () -> authService.login(new LoginRequest("221386653", "WrongPass!")),
+        InvalidCredentialsException ex = catchThrowableOfType(
+                () -> authService.login(
+                        new LoginRequest("221386653", "WrongPass!", "STUDENT")),
                 InvalidCredentialsException.class
         );
 
-        // The error message must be identical to the "user not found" case
-        // to prevent institution-number enumeration attacks.
-        assertThat(byWrongPw).hasMessage("Invalid institution number or password.");
+        // Message must be identical to the "user not found" case to prevent
+        // institution-number enumeration attacks.
+        assertThat(ex).hasMessage("Invalid credentials.");
+    }
+
+    @Test
+    void login_studentLoggingInAsAdmin_throwsInvalidCredentials() {
+        when(userRepository.findByInstitutionNumber("221386653"))
+                .thenReturn(Optional.of(savedStudent));
+        when(passwordEncoder.matches("Student@123", "$2a$12$hashedpw")).thenReturn(true);
+
+        // Student account attempting to log in via Admin portal
+        assertThatThrownBy(() -> authService.login(
+                new LoginRequest("221386653", "Student@123", "ADMIN")))
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("Invalid credentials.");
+    }
+
+    @Test
+    void login_studentLoggingInAsEmployee_throwsInvalidCredentials() {
+        when(userRepository.findByInstitutionNumber("221386653"))
+                .thenReturn(Optional.of(savedStudent));
+        when(passwordEncoder.matches("Student@123", "$2a$12$hashedpw")).thenReturn(true);
+
+        // Student account attempting to log in via Employee portal
+        assertThatThrownBy(() -> authService.login(
+                new LoginRequest("221386653", "Student@123", "EMPLOYEE")))
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("Invalid credentials.");
     }
 }
