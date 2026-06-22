@@ -34,8 +34,8 @@ export function AuthProvider({ children }) {
     setUser(authResp);
   }, []);
 
-  const login = useCallback(async (institutionNumber, password) => {
-    const resp = await authApi.login({ institutionNumber, password });
+  const login = useCallback(async (institutionNumber, password, expectedRole) => {
+    const resp = await authApi.login({ institutionNumber, password, expectedRole });
     persist(resp);
     return resp;
   }, [persist]);

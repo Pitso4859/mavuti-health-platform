@@ -15,21 +15,6 @@ import za.ac.vut.mavuti.repository.UserRepository;
 import za.ac.vut.mavuti.security.JwtService;
 import za.ac.vut.mavuti.service.AuthService;
 
-/**
- * Implements registration and login for the unified student/employee
- * account model.
- *
- * <p><b>Why one {@code AuthService} for both roles?</b> Per the project's
- * design decision, students and employees share a single login screen and
- * the same {@link User} table, differentiated only by {@link UserRole} and
- * the semantics of {@code institutionNumber} (student number vs employee
- * number). This avoids duplicating the entire auth stack (two tables, two
- * controllers, two JWT issuers) for what is, from the system's
- * perspective, the same operation: "verify credentials, issue a token with
- * a role claim". Role-specific behaviour (e.g. staff-only endpoints) is
- * handled downstream via {@code @PreAuthorize}, not by forking auth
- * itself.</p>
- */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -62,50 +47,49 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User saved = userRepository.save(user);
-
         String token = jwtService.generateToken(saved.getInstitutionNumber(), saved.getRole().name(), saved.getId());
 
-        return new AuthResponse(
-                token,
-                saved.getId(),
-                saved.getFirstName(),
-                saved.getLastName(),
-                saved.getInstitutionNumber(),
-                saved.getRole()
-        );
+        return new AuthResponse(token, saved.getId(), saved.getFirstName(),
+                saved.getLastName(), saved.getInstitutionNumber(), saved.getRole());
     }
 
     @Override
     public AuthResponse login(LoginRequest request) {
+        // Use the same error message whether the number doesn't exist or the
+        // password is wrong — prevents attackers from enumerating valid numbers.
         User user = userRepository.findByInstitutionNumber(request.institutionNumber().trim())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid institution number or password."));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials."));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            // Deliberately the same message as "user not found" above -
-            // distinguishing the two would let an attacker enumerate valid
-            // institution numbers.
-            throw new InvalidCredentialsException("Invalid institution number or password.");
+            throw new InvalidCredentialsException("Invalid credentials.");
         }
+
+        // ── ROLE ENFORCEMENT ──────────────────────────────────────────────
+        // Validate that the portal the user selected matches their actual role.
+        // A student cannot log in via the Employee or Admin portal and vice versa.
+        // We use the same generic error message to avoid leaking role information.
+        UserRole expectedRole;
+        try {
+            expectedRole = UserRole.valueOf(request.expectedRole().trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidCredentialsException("Invalid credentials.");
+        }
+
+        if (user.getRole() != expectedRole) {
+            throw new InvalidCredentialsException("Invalid credentials.");
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         String token = jwtService.generateToken(user.getInstitutionNumber(), user.getRole().name(), user.getId());
 
-        return new AuthResponse(
-                token,
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getInstitutionNumber(),
-                user.getRole()
-        );
+        return new AuthResponse(token, user.getId(), user.getFirstName(),
+                user.getLastName(), user.getInstitutionNumber(), user.getRole());
     }
 
     /**
-     * Parses the role string from the registration form.
-     *
-     * <p>{@code ADMIN} is deliberately not accepted from public
-     * self-registration - admin accounts are provisioned out-of-band
-     * (e.g. directly in the database or via a future admin-only endpoint)
-     * to prevent anyone from registering themselves as an administrator.</p>
+     * ADMIN cannot be self-registered via the public endpoint.
+     * Admin accounts are created directly in the DB or via a future
+     * admin-only provisioning endpoint.
      */
     private UserRole parseRole(String roleStr) {
         try {

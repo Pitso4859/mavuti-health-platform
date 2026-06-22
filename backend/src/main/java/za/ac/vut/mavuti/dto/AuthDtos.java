@@ -6,29 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import za.ac.vut.mavuti.enums.UserRole;
 
-/**
- * Request/response payloads for authentication endpoints.
- *
- * <p>Kept as nested static classes in one file (rather than one file per
- * DTO) because they are small, tightly related, and only ever used
- * together by {@code AuthController}. Splitting them into five
- * near-empty files would add navigation overhead without improving
- * readability - a judgment call favouring "find everything about auth
- * payloads in one place" over strict one-class-per-file convention.</p>
- */
 public class AuthDtos {
 
-    /**
-     * Registration request.
-     *
-     * <p>{@code institutionNumber} validation differs by role:
-     * a VUT <b>student number</b> is 9 digits (e.g. 221386653), while the
-     * <b>employee number</b> format used here is 10 digits
-     * (e.g. 4557545664). The regex below accepts 6-12 digits to
-     * accommodate both without hard-coding either institution's exact
-     * numbering scheme, since that is an HR/registry policy detail that
-     * can change independently of this codebase.</p>
-     */
     public record RegisterRequest(
             @NotBlank(message = "First name is required")
             @Size(max = 80)
@@ -54,28 +33,28 @@ public class AuthDtos {
             String password,
 
             @NotBlank(message = "Role is required")
-            String role // "STUDENT" or "EMPLOYEE" - parsed to UserRole in the service layer
+            String role
     ) {}
 
     /**
-     * Login request. Authentication is by institution number, not email -
-     * this matches how a student or employee would naturally identify
-     * themselves to a campus system.
+     * Login request.
+     *
+     * expectedRole is the portal the user selected (STUDENT / EMPLOYEE / ADMIN).
+     * The backend validates this matches the account's actual role before
+     * issuing a token — so a student number cannot authenticate via the
+     * Employee or Admin portal even if credentials are correct.
      */
     public record LoginRequest(
             @NotBlank(message = "Institution number is required")
             String institutionNumber,
 
             @NotBlank(message = "Password is required")
-            String password
+            String password,
+
+            @NotBlank(message = "Account type is required")
+            String expectedRole
     ) {}
 
-    /**
-     * Returned on successful login/registration. The JWT is opaque to the
-     * frontend - it is stored and attached as a Bearer token, never
-     * decoded or inspected client-side for authorization decisions
-     * (all authorization is enforced server-side).
-     */
     public record AuthResponse(
             String token,
             Long userId,

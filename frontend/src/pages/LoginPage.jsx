@@ -183,7 +183,7 @@ export default function LoginPage() {
     const [submitting, setSub]    = useState(false);
     const [showForm, setShowForm] = useState(false);
 
-    const { login } = useAuth();
+    const { login, logout } = useAuth();
     const navigate  = useNavigate();
     const location  = useLocation();
     const from      = location.state?.from?.pathname || '/dashboard';
@@ -209,9 +209,21 @@ export default function LoginPage() {
         setError(null);
         setSub(true);
         try {
-            await login(form.institutionNumber.trim(), form.password);
-            navigate(from, { replace: true });
+            // Pass the selected portal role to the backend.
+            // The backend rejects the login if the account's actual role
+            // does not match — student number cannot log in via Admin portal etc.
+            const resp = await login(form.institutionNumber.trim(), form.password, selected.id);
+
+            // Navigate based on role
+            if (resp.role === 'ADMIN') {
+                navigate('/admin', { replace: true });
+            } else if (resp.role === 'EMPLOYEE') {
+                navigate('/dashboard', { replace: true });
+            } else {
+                navigate('/dashboard', { replace: true });
+            }
         } catch (err) {
+            // Backend returns "Invalid credentials." for wrong role — show it directly
             setError(err.message);
         } finally {
             setSub(false);
