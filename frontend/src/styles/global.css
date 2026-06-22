@@ -443,7 +443,7 @@ button { cursor: pointer; font-family: inherit; }
 .hero {
   background:
     linear-gradient(135deg, rgba(0,20,80,0.82) 0%, rgba(0,10,50,0.75) 60%, rgba(0,5,30,0.88) 100%),
-    url('/images/vut-building-exterior.svg') center/cover no-repeat;
+    url('/') center/cover no-repeat;
   color: var(--white);
   padding: var(--s24) 0;
   position: relative;
